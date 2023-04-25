@@ -1,0 +1,6 @@
+# AI
+tensorflow<2.11
+
+# API
+fastapi
+uvicorn[standard]
