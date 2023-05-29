@@ -1,3 +1,5 @@
+import numpy as np
+
 from ..do_not_touch.mdp_env_wrapper import Env1
 from ..do_not_touch.result_structures import ValueFunction, PolicyAndValueFunction
 
@@ -9,6 +11,33 @@ def policy_evaluation_on_line_world() -> ValueFunction:
     Returns the Value function (V(s)) of this policy
     """
     # TODO
+
+    def pi_random_line_world(s, a):
+        if s == 0 or s == 4:
+            return 0.0
+        return 0.5
+
+    def policy_evaluation(S, A, R, p, pi, theta: float = 0.0000001) -> np.array:
+        V = np.zeros((len(S),))
+        while True:
+            delta = 0.0
+            for s in S:
+                old_v = V[s]
+                total = 0.0
+                for a in A:
+                    total_inter = 0.0
+                    for s_p in S:
+                        for r in range(len(R)):
+                            total_inter += p(s, a, s_p, r) * (R[r] + 0.99999 * V[s_p])
+                    total_inter = pi(s, a) * total_inter
+                    total += total_inter
+                V[s] = total
+                delta = max(delta, np.abs(V[s] - old_v))
+            if delta < theta:
+                return V
+
+    policy_evaluation(S_Line_World, A_Line_World, R_Line_World, p_line_world, pi_random_line_world)
+    pass
     pass
 
 
