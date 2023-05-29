@@ -23,7 +23,7 @@ environnements
    - Implémentation de l'algorithme Sarsa
    - Implémentation de l'algorithme Q-Learning
    - Implémentation de l'algorithme Expected Sarsa
-   - Tests et vé rifications de ces algorithmes sur l'environnement TicTacToe 1 et les précédents
+   - Tests et vérifications de ces algorithmes sur l'environnement TicTacToe 1 et les précédents
 environnements
    - Optionnel : Implémentation de l'algorithme *n-step Q-Learning*
    - Evaluation sur l'environnement *secret 3*
