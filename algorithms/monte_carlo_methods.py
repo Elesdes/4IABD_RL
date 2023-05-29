@@ -2,11 +2,11 @@ import random
 
 from games.tictactoe import TicTacToe
 
-from ..do_not_touch.result_structures import PolicyAndActionValueFunction
-from ..do_not_touch.single_agent_env_wrapper import Env2
+from do_not_touch.result_structures import PolicyAndActionValueFunction
+from do_not_touch.single_agent_env_wrapper import Env2
 
 
-def monte_carlo_es_on_tic_tac_toe_solo(env: object, num_episodes: int = 1e5, epsilon: float = 0.1) -> PolicyAndActionValueFunction:
+def monte_carlo_es_on_tic_tac_toe_solo(env: object, num_episodes: int = 10000, epsilon: float = 0.1) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
     Launches a Monte Carlo ES (Exploring Starts) in order to find the optimal Policy and its action-value function
@@ -103,7 +103,8 @@ def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunct
 
 
 def demo():
-    print(monte_carlo_es_on_tic_tac_toe_solo())
+    tictactoe = TicTacToe()
+    print(monte_carlo_es_on_tic_tac_toe_solo(tictactoe))
     print(on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo())
     print(off_policy_monte_carlo_control_on_tic_tac_toe_solo())
 
