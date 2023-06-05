@@ -1,5 +1,5 @@
 from typing import List
-class SingleAgentEnv:
+class SingleAgentLineWorldEnv:
     def state_id(self) -> int:
         pass
 
@@ -36,7 +36,7 @@ class SingleAgentEnv:
     def p(self, s, a, s_p, r):
         pass
 
-class LineWorldEnv(SingleAgentEnv):
+class LineWorldEnv(SingleAgentLineWorldEnv):
     def __init__(self, cells_count: int):
         self.cells_count = cells_count
         self.agent_pos = -1

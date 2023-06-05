@@ -1,5 +1,5 @@
 from typing import List
-class SingleAgentEnv:
+class SingleAgentGridWorldEnv:
     def state_id(self) -> int:
         pass
 
@@ -36,7 +36,7 @@ class SingleAgentEnv:
     def p(self, s, a, s_p, r):
         pass
 
-class GridWorldEnv(SingleAgentEnv):
+class GridWorldEnv(SingleAgentGridWorldEnv):
     def __init__(self, row_len: int, column_len: int):
         if row_len < 2:
             row_len = 2
@@ -65,7 +65,7 @@ class GridWorldEnv(SingleAgentEnv):
         return 4
 
     def is_game_over(self) -> bool:
-        return self.agent_pos == 0 or self.agent_pos == (self.row_len * self.column_len) - 1
+        return self.agent_pos == (self.row_len - 1) or self.agent_pos == ((self.row_len * self.column_len) - 1)
 
     def available_actions(self) -> List[int]:
         return [0, 1, 2, 3] if not self.is_game_over() else []  # Left, Right
@@ -86,7 +86,7 @@ class GridWorldEnv(SingleAgentEnv):
     def score(self) -> float:
         if self.agent_pos == self.row_len-1:
             return -1.0
-        if self.agent_pos == (self.row_len * self.column_len) - 1:
+        if self.agent_pos == ((self.row_len * self.column_len) - 1):
             return 1.0
         return 0.0
 
@@ -103,7 +103,7 @@ class GridWorldEnv(SingleAgentEnv):
     def p(self, s, a, s_p, r) -> float:
         if s == self.row_len-2 and a == 1 and s_p == self.row_len-1 and r == 0:
             return 1.0
-        if s == 2*self.row_len-1 and a == 3 and s_p == self.row_len-1 and r == 0:
+        if s == 2 * self.row_len-1 and a == 3 and s_p == self.row_len-1 and r == 0:
             return 1.0
         if s == (self.row_len * self.column_len) - 2 and a == 1 and s_p == (self.row_len * self.column_len) - 1 and r == 2:
             return 1.0
