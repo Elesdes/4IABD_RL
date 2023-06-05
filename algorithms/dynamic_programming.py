@@ -1,30 +1,31 @@
 from do_not_touch.mdp_env_wrapper import Env1
 from do_not_touch.result_structures import ValueFunction, PolicyAndValueFunction
 import numpy as np
-from games.line_world import LineWorld
+from games.line_world import LineWorldEnv, SingleAgentEnv
 from games.grid_world import GridWorld
 from do_not_touch.mdp_env_wrapper import Env1
 from do_not_touch.result_structures import ValueFunction, PolicyAndValueFunction, Policy
 
 
-def policy_evaluation_on_line_world(S, A, R, p, pi, theta: float = 0.0000001) -> ValueFunction:
+def policy_evaluation_on_line_world(env: SingleAgentEnv,
+                                    theta: float = 0.0000001) -> ValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
     Launches a Policy Evaluation Algorithm in order to find the Value Function of a uniform random policy
     Returns the Value function (V(s)) of this policy
     """
-    V = np.zeros((len(S),))
+    V = np.zeros((env.state_space(),))
     while True:
         delta = 0.0
-        for s in S:
+        for s in range(env.state_space()):
             old_v = V[s]
             total = 0.0
-            for a in A:
+            for a in env.available_actions():
                 total_inter = 0.0
-                for s_p in S:
-                    for r in range(len(R)):
-                        total_inter += p(s, a, s_p, r) * (R[r] + 0.99999 * V[s_p])
-                total_inter = pi(s, a) * total_inter
+                for s_p in range(env.state_space()):
+                    for r in range(len(env.possible_score())):
+                        total_inter += env.p(s, a, s_p, r) * (env.possible_score()[r] + 0.99999 * V[s_p])
+                total_inter = env.pi(s, a) * total_inter
                 total += total_inter
             V[s] = total
             delta = max(delta, np.abs(V[s] - old_v))
@@ -32,27 +33,28 @@ def policy_evaluation_on_line_world(S, A, R, p, pi, theta: float = 0.0000001) ->
             return dict(enumerate(V.flatten(), 1))
 
 
-def policy_iteration_on_line_world(S, A, R, p, theta: float = 0.0000001) -> PolicyAndValueFunction:
+def policy_iteration_on_line_world(env: SingleAgentEnv,
+                                   theta: float = 0.0000001) -> PolicyAndValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
     Launches a Policy Iteration Algorithm in order to find the Optimal Policy and its Value Function
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
     """
-    V = np.zeros((len(S),))
-    pi = np.random.randint(0, len(A), len(S))
+    V = np.zeros((env.state_space(),))
+    pi = np.random.randint(0, len(env.available_actions()), env.state_space())
 
     while True:
         # policy evaluation
         while True:
             delta = 0
-            for s in S:
+            for s in range(env.state_space()):
                 old_v = V[s]
 
                 total = 0.0
 
-                for s_p in S:
-                    for r in range(len(R)):
-                        total += p(s, pi[s], s_p, r) * (R[r] + 0.99999999 * V[s_p])
+                for s_p in range(env.state_space()):
+                    for r in range(len(env.possible_score())):
+                        total += env.p(s, pi[s], s_p, r) * (env.possible_score()[r] + 0.99999999 * V[s_p])
                 V[s] = total
                 delta = max(delta, np.abs(old_v - V[s]))
             if delta < theta:
@@ -60,16 +62,16 @@ def policy_iteration_on_line_world(S, A, R, p, theta: float = 0.0000001) -> Poli
 
         # policy improvement
         policy_stable = True
-        for s in S:
+        for s in range(env.state_space()):
             old_action = pi[s]
 
             best_a = None
             best_action_score = None
-            for a in A:
+            for a in env.available_actions():
                 total = 0.0
-                for s_p in S:
-                    for r in range(len(R)):
-                        total += p(s, a, s_p, r) * (R[r] + 0.999999 * V[s_p])
+                for s_p in range(env.state_space()):
+                    for r in range(len(env.possible_score())):
+                        total += env.p(s, a, s_p, r) * (env.possible_score()[r] + 0.999999 * V[s_p])
                 if best_a is None or total > best_action_score:
                     best_a = a
                     best_action_score = total
@@ -92,6 +94,7 @@ def value_iteration_on_line_world(S, A, R, p, theta: float = 0.0000001) -> Polic
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
     Launches a Value Iteration Algorithm in order to find the Optimal Policy and its Value Function
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
+    """
     """
     # TODO
     V = np.zeros((len(S),))
@@ -150,7 +153,7 @@ def value_iteration_on_line_world(S, A, R, p, theta: float = 0.0000001) -> Polic
     print("V : ", V)
     print("Returned Policy: ", returned_policy)
     return PolicyAndValueFunction(pi=returned_policy, v=dict(enumerate(V.flatten(), 1)))
-
+    """
 
 def policy_evaluation_on_grid_world() -> ValueFunction:
     """
@@ -261,11 +264,14 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
 
 
 def demo():
-    line_world = LineWorld()
+    line_world = LineWorldEnv(7)
     grid_world = GridWorld()
-    print(policy_evaluation_on_line_world(line_world.S, line_world.A, line_world.R, line_world.p, line_world.pi))
-    print(policy_iteration_on_line_world(line_world.S, line_world.A, line_world.R, line_world.p))
+    print(policy_evaluation_on_line_world(line_world))
+    line_world.reset()
+    print(policy_iteration_on_line_world(line_world))
+    line_world.reset()
     #print(value_iteration_on_line_world(line_world.S, line_world.A, line_world.R, line_world.p))
+    line_world.reset()
 
     print(policy_evaluation_on_grid_world())
     print(policy_iteration_on_grid_world(grid_world.S, grid_world.A, grid_world.R, grid_world.p))
