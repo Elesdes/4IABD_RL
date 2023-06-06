@@ -1,6 +1,7 @@
 from do_not_touch.mdp_env_wrapper import Env1
 from do_not_touch.result_structures import ValueFunction, PolicyAndValueFunction
 import numpy as np
+from algorithms.utils import return_policy_into_dict
 from games.line_world import LineWorldEnv, SingleAgentLineWorldEnv
 from games.grid_world import GridWorldEnv, SingleAgentGridWorldEnv
 from do_not_touch.mdp_env_wrapper import Env1
@@ -81,12 +82,7 @@ def policy_iteration_on_line_world(env: SingleAgentLineWorldEnv,
                 policy_stable = False
 
         if policy_stable:
-            #TODO Prévoir une fonction qui convertit en policy
-            returned_policy = {0:dict()}
-            for i, pi_i in enumerate(pi):
-                returned_policy[0].update({i: pi_i})
-
-            return PolicyAndValueFunction(pi=returned_policy, v=dict(enumerate(V.flatten(), 1)))
+            return PolicyAndValueFunction(pi=return_policy_into_dict(pi), v=dict(enumerate(V.flatten(), 1)))
 
 
 def value_iteration_on_line_world(env: SingleAgentLineWorldEnv,
@@ -121,12 +117,7 @@ def value_iteration_on_line_world(env: SingleAgentLineWorldEnv,
         if delta < theta:
             break
 
-    # TODO Prévoir une fonction qui convertit en policy
-    returned_policy = {0: dict()}
-    for i, pi_i in enumerate(pi):
-        returned_policy[0].update({i: pi_i})
-
-    return PolicyAndValueFunction(pi=returned_policy, v=dict(enumerate(V.flatten(), 1)))
+    return PolicyAndValueFunction(pi=return_policy_into_dict(pi), v=dict(enumerate(V.flatten(), 1)))
 
 def policy_evaluation_on_grid_world(env: SingleAgentGridWorldEnv,
                                     theta: float = 0.0000001) -> ValueFunction:
@@ -202,12 +193,7 @@ def policy_iteration_on_grid_world(env: SingleAgentGridWorldEnv,
                 policy_stable = False
 
         if policy_stable:
-            # TODO Prévoir une fonction qui convertit en policy
-            returned_policy = {0: dict()}
-            for i, pi_i in enumerate(pi):
-                returned_policy[0].update({i: pi_i})
-
-            return PolicyAndValueFunction(pi=returned_policy, v=dict(enumerate(V.flatten(), 1)))
+            return PolicyAndValueFunction(pi=return_policy_into_dict(pi), v=dict(enumerate(V.flatten(), 1)))
 
 
 def value_iteration_on_grid_world(env: SingleAgentGridWorldEnv,
@@ -242,13 +228,7 @@ def value_iteration_on_grid_world(env: SingleAgentGridWorldEnv,
         if delta < theta:
             break
 
-    # TODO Prévoir une fonction qui convertit en policy
-    returned_policy = {0: dict()}
-    for i, pi_i in enumerate(pi):
-        returned_policy[0].update({i: pi_i})
-
-    return PolicyAndValueFunction(pi=returned_policy, v=dict(enumerate(V.flatten(), 1)))
-    pass
+    return PolicyAndValueFunction(pi=return_policy_into_dict(pi), v=dict(enumerate(V.flatten(), 1)))
 
 
 def policy_evaluation_on_secret_env1() -> ValueFunction:
