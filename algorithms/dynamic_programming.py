@@ -95,34 +95,9 @@ def value_iteration_on_line_world(S, A, R, p, theta: float = 0.0000001) -> Polic
     Launches a Value Iteration Algorithm in order to find the Optimal Policy and its Value Function
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
     """
-    """
     # TODO
     V = np.zeros((len(S),))
     pi = np.random.randint(0, len(A), len(S))
-
-    # TODO: poser la question à la réu
-    S = []
-    A = []
-    Q = np.random.uniform(-1.0, 1.0, (len(S), 2))
-    Returns = [[[] for a in range(2)] for s in range(len(S))]
-    while not env.is_game_over():
-        s = env.state_id()
-        aa = env.available_actions()
-
-        pi_s = [pi[s, a] for a in aa]
-        assert (np.sum(pi_s) == 1.0)
-        a = np.random.choice(aa, p=pi_s)
-
-        env.step(a)
-        S.append(s)
-        A.append(a)
-    for t in reversed(range(len(S))):
-        s_t = S[t]
-        a_t = A[t]
-        if (s_t, a_t) not in zip(S[0: t], A[0: t]):
-            Q[s_t, a_t] = np.mean(Returns[s_t][a_t])
-    print("s_t: ", s_t)
-    print("a_t: ", a_t)
     while True:
         delta = 0
         for s in S:
@@ -153,7 +128,6 @@ def value_iteration_on_line_world(S, A, R, p, theta: float = 0.0000001) -> Polic
     print("V : ", V)
     print("Returned Policy: ", returned_policy)
     return PolicyAndValueFunction(pi=returned_policy, v=dict(enumerate(V.flatten(), 1)))
-    """
 
 def policy_evaluation_on_grid_world(env: SingleAgentGridWorldEnv,
                                     theta: float = 0.0000001) -> ValueFunction:
@@ -294,7 +268,7 @@ def demo():
     grid_world.reset()
     print(policy_iteration_on_grid_world(grid_world))
     grid_world.reset()
-    print(value_iteration_on_grid_world())
+    #print(value_iteration_on_grid_world())
     grid_world.reset()
 
     print(policy_evaluation_on_secret_env1())

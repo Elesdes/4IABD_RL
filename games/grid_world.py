@@ -107,31 +107,31 @@ class GridWorldEnv(SingleAgentGridWorldEnv):
             return 1.0
         if s == (self.row_len * self.column_len) - 2 and a == 1 and s_p == (self.row_len * self.column_len) - 1 and r == 2:
             return 1.0
-        if s == (self.row_len * self.column_len - self.row_len) - 1 and a == 2 and s_p == (self.row_len * self.column_len) - 1 and r == 2:
+        if s == ((self.row_len * self.column_len) - self.row_len) - 1 and a == 2 and s_p == (self.row_len * self.column_len) - 1 and r == 2:
             return 1.0
 
         already_stated_cases = [self.row_len-1, self.row_len*self.column_len - 1]
         left_column = [x for x in range(0, self.row_len*self.column_len-1, self.row_len)]
-        state_cases = [x for x in range(0, self.row_len * self.column_len - 1) if x not in already_stated_cases + left_column]
+        state_cases = [x for x in range(0, self.row_len * self.column_len) if x not in already_stated_cases + left_column]
         if s in state_cases and a == 0 and s_p == s - 1 and r == 1:
             return 1.0
 
         already_stated_cases = [self.row_len - 2, self.row_len * self.column_len - 2]
-        right_column = [x for x in range(self.row_len - 1, self.row_len*self.column_len-1, self.row_len)]
-        state_cases = [x for x in range(0, self.row_len * self.column_len - 1) if x not in already_stated_cases + right_column]
+        right_column = [x for x in range(self.row_len - 1, self.row_len*self.column_len, self.row_len)]
+        state_cases = [x for x in range(0, self.row_len * self.column_len) if x not in already_stated_cases + right_column]
         if s in state_cases and a == 1 and s_p == s + 1 and r == 1:
             return 1.0
 
-        already_stated_cases = [self.row_len * self.column_len - 1 - self.row_len, self.row_len - 1]
+        already_stated_cases = [self.row_len * self.column_len - self.row_len - 1, self.row_len - 1]
         bottom_row = [x for x in range(self.row_len * self.column_len - self.row_len, self.row_len * self.column_len)]
-        state_cases = [x for x in range(0, self.row_len * self.column_len - 1) if x not in already_stated_cases + bottom_row]
-        if s in state_cases and a == 2 and s_p == s + 5 and r == 1:
+        state_cases = [x for x in range(0, self.row_len * self.column_len) if x not in already_stated_cases + bottom_row]
+        if s in state_cases and a == 2 and s_p == s + self.row_len and r == 1:
             return 1.0
 
         already_stated_cases = [2 * self.row_len - 1, self.row_len * self.column_len - 1]
         top_row = [x for x in range(0, self.row_len)]
-        state_cases = [x for x in range(0, self.row_len * self.column_len - 1) if x not in already_stated_cases + top_row]
-        if s in state_cases and a == 3 and s_p == s - 5 and r == 1:
+        state_cases = [x for x in range(0, self.row_len * self.column_len) if x not in already_stated_cases + top_row]
+        if s in state_cases and a == 3 and s_p == s - self.row_len and r == 1:
             return 1.0
         return 0.0
 
