@@ -3,6 +3,9 @@ class SingleAgentLineWorldEnv:
     def state_id(self) -> int:
         pass
 
+    def set_state_id(self, pos) -> None:
+        pass
+
     def state_space(self) -> int:
         pass
 
@@ -47,6 +50,9 @@ class LineWorldEnv(SingleAgentLineWorldEnv):
 
     def state_space(self) -> int:
         return self.cells_count
+
+    def set_state_id(self, pos) -> None:
+        self.agent_pos = pos
 
     def action_space(self) -> int:
         return 2

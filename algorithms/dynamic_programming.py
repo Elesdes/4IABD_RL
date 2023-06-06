@@ -89,27 +89,40 @@ def policy_iteration_on_line_world(env: SingleAgentLineWorldEnv,
             return PolicyAndValueFunction(pi=returned_policy, v=dict(enumerate(V.flatten(), 1)))
 
 
-def value_iteration_on_line_world(S, A, R, p, theta: float = 0.0000001) -> PolicyAndValueFunction:
+def value_iteration_on_line_world(env: SingleAgentLineWorldEnv,
+                                  theta: float = 0.0000001) -> PolicyAndValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
     Launches a Value Iteration Algorithm in order to find the Optimal Policy and its Value Function
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
     """
     # TODO
-    V = np.zeros((len(S),))
-    pi = np.random.randint(0, len(A), len(S))
+    def Q(a):
+        old_pose = env.state_id()
+        env.step(a)
+        value = env.score()
+        env.set_state_id(old_pose)
+        return value
+
+    V = np.zeros((env.state_space(),))
+    pi = np.random.randint(0, len(env.available_actions()), env.state_space())
     while True:
         delta = 0
-        for s in S:
+        for s in range(env.state_space()):
             old_v = V[s]
 
             total = 0.0
             best_a = None
             best_action_score = None
-            for a in A:
-                for s_p in S:
-                    for r in range(len(R)):
-                        total += max(A) * p(s, a, s_p, r) * (R[r] + 0.99999999 * V[s_p]) # TODO max(A) à changer
+            for a in env.available_actions():
+                for s_p in range(env.state_space()):
+                    for r in range(len(env.possible_score())):
+                        max_a = -np.inf
+                        for a_temp in env.available_actions():
+                            action_value_func = Q(a_temp)
+                            max_a = max(max_a, action_value_func)
+                            print("max_a: ", max_a)
+                        total += max_a * env.p(s, a, s_p, r) * (env.possible_score()[r] + 0.99999999 * V[s_p])
                 if best_a is None or total > best_action_score:
                     best_a = a
                     best_action_score = total
@@ -125,8 +138,6 @@ def value_iteration_on_line_world(S, A, R, p, theta: float = 0.0000001) -> Polic
     for i, pi_i in enumerate(pi):
         returned_policy[0].update({i: pi_i})
 
-    print("V : ", V)
-    print("Returned Policy: ", returned_policy)
     return PolicyAndValueFunction(pi=returned_policy, v=dict(enumerate(V.flatten(), 1)))
 
 def policy_evaluation_on_grid_world(env: SingleAgentGridWorldEnv,
@@ -261,16 +272,17 @@ def demo():
     line_world.reset()
     print(policy_iteration_on_line_world(line_world))
     line_world.reset()
-    #print(value_iteration_on_line_world(line_world.S, line_world.A, line_world.R, line_world.p))
+    print(value_iteration_on_line_world(line_world))
     line_world.reset()
-
+    """
     print(policy_evaluation_on_grid_world(grid_world))
     grid_world.reset()
     print(policy_iteration_on_grid_world(grid_world))
     grid_world.reset()
     #print(value_iteration_on_grid_world())
     grid_world.reset()
-
+    
     print(policy_evaluation_on_secret_env1())
     print(policy_iteration_on_secret_env1())
     print(value_iteration_on_secret_env1())
+    """

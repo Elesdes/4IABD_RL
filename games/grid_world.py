@@ -3,6 +3,9 @@ class SingleAgentGridWorldEnv:
     def state_id(self) -> int:
         pass
 
+    def set_state_id(self, pos) -> None:
+        pass
+
     def state_space(self) -> int:
         pass
 
@@ -58,6 +61,8 @@ class GridWorldEnv(SingleAgentGridWorldEnv):
     def state_id(self) -> int:
         return self.agent_pos
 
+    def set_state_id(self, pos) -> None:
+        self.agent_pos = pos
     def state_space(self) -> int:
         return self.row_len * self.column_len
 
