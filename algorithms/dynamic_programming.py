@@ -96,8 +96,6 @@ def value_iteration_on_line_world(env: SingleAgentLineWorldEnv,
     Launches a Value Iteration Algorithm in order to find the Optimal Policy and its Value Function
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
     """
-    # TODO
-
     V = np.zeros((env.state_space(),))
     pi = np.random.randint(0, len(env.available_actions()), env.state_space())
     while True:
@@ -105,19 +103,20 @@ def value_iteration_on_line_world(env: SingleAgentLineWorldEnv,
         for s in range(env.state_space()):
             old_v = V[s]
 
-            total = 0.0
-            best_a = None
             best_action_score = None
+            best_a = None
             for a in env.available_actions():
+                total = 0.0
                 for s_p in range(env.state_space()):
                     for r in range(len(env.possible_score())):
-                        total += max(a) * env.p(s, a, s_p, r) * (env.possible_score()[r] + 0.99999999 * V[s_p]) #TODO Change max(a)
-                if best_a is None or total > best_action_score:
-                    best_a = a
-                    best_action_score = total
+                        total += env.p(s, a, s_p, r) * (env.possible_score()[r] + 0.99999999 * V[s_p])
 
+                if best_action_score is None or total > best_action_score:
+                    best_action_score = total
+                    best_a = a
+
+            V[s] = best_action_score
             pi[s] = best_a
-            V[s] = total
             delta = max(delta, np.abs(old_v - V[s]))
         if delta < theta:
             break
@@ -211,13 +210,44 @@ def policy_iteration_on_grid_world(env: SingleAgentGridWorldEnv,
             return PolicyAndValueFunction(pi=returned_policy, v=dict(enumerate(V.flatten(), 1)))
 
 
-def value_iteration_on_grid_world() -> PolicyAndValueFunction:
+def value_iteration_on_grid_world(env: SingleAgentGridWorldEnv,
+                                  theta: float = 0.0000001) -> PolicyAndValueFunction:
     """
     Creates a Grid World of 5x5 cells (upper rightmost and lower rightmost are terminal, with -1 and 1 reward respectively)
     Launches a Value Iteration Algorithm in order to find the Optimal Policy and its Value Function
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
     """
-    # TODO
+    V = np.zeros((env.state_space(),))
+    pi = np.random.randint(0, len(env.available_actions()), env.state_space())
+    while True:
+        delta = 0
+        for s in range(env.state_space()):
+            old_v = V[s]
+
+            best_action_score = None
+            best_a = None
+            for a in env.available_actions():
+                total = 0.0
+                for s_p in range(env.state_space()):
+                    for r in range(len(env.possible_score())):
+                        total += env.p(s, a, s_p, r) * (env.possible_score()[r] + 0.99999999 * V[s_p])
+
+                if best_action_score is None or total > best_action_score:
+                    best_action_score = total
+                    best_a = a
+
+            V[s] = best_action_score
+            pi[s] = best_a
+            delta = max(delta, np.abs(old_v - V[s]))
+        if delta < theta:
+            break
+
+    # TODO Prévoir une fonction qui convertit en policy
+    returned_policy = {0: dict()}
+    for i, pi_i in enumerate(pi):
+        returned_policy[0].update({i: pi_i})
+
+    return PolicyAndValueFunction(pi=returned_policy, v=dict(enumerate(V.flatten(), 1)))
     pass
 
 
@@ -261,17 +291,16 @@ def demo():
     line_world.reset()
     print(policy_iteration_on_line_world(line_world))
     line_world.reset()
-    #print(value_iteration_on_line_world(line_world))
+    print(value_iteration_on_line_world(line_world))
     line_world.reset()
-    """
+
     print(policy_evaluation_on_grid_world(grid_world))
     grid_world.reset()
     print(policy_iteration_on_grid_world(grid_world))
     grid_world.reset()
-    #print(value_iteration_on_grid_world())
+    print(value_iteration_on_grid_world(grid_world))
     grid_world.reset()
     
     print(policy_evaluation_on_secret_env1())
     print(policy_iteration_on_secret_env1())
     print(value_iteration_on_secret_env1())
-    """
