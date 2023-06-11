@@ -6,15 +6,61 @@ from algorithms.utils import return_policy_into_dict
 import numpy as np
 
 
-def sarsa_on_line_world() -> PolicyAndActionValueFunction:
+def sarsa_on_line_world(env: SingleAgentLineWorldEnv,
+                        gamma: float = 0.9999,
+                        alpha: float = 0.01,
+                        epsilon: float = 0.2,
+                        max_episodes_count: int = 10000) -> PolicyAndActionValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
     Launches a SARSA Algorithm in order to find the optimal epsilon-greedy Policy and its action-value function
     Returns the optimal epsilon-greedy Policy and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
-    # TODO
-    pass
+    assert (epsilon > 0)
+    assert (alpha > 0)
+    pi = np.zeros((env.state_space(), env.action_space()))
+    Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
+
+    for ep_id in range(max_episodes_count):
+        env.reset()
+        while not env.is_game_over():
+            s = env.state_id()
+            aa = env.available_actions()
+
+            if np.random.random() < epsilon:
+                a = np.random.choice(aa)
+            else:
+                best_a_idx = np.argmax(Q[s][aa])
+                a = aa[best_a_idx]
+
+            old_score = env.score()
+            env.step(a)
+            new_score = env.score()
+            r = new_score - old_score
+
+            s_p = env.state_id()
+            aa_p = env.available_actions()
+
+            # Watch out, you need to take a specific a' AND it needs to not be "game over"-like
+            if aa_p:
+                if np.random.random() < epsilon:
+                    a_p = np.random.choice(aa_p)
+                else:
+                    best_a_p_idx = np.argmax(Q[s_p][aa_p])
+                    a_p = aa[best_a_p_idx]
+
+
+            if env.is_game_over():
+                Q[s_p, :] = 0.0
+                Q[s, a] += alpha * (r - Q[s, a])
+            else:
+                Q[s, a] += alpha * (r + gamma * (Q[s_p][a_p]) - Q[s, a])
+
+            pi[s, :] = 0.0
+            pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
+
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
 
 
 def q_learning_on_line_world(env: SingleAgentLineWorldEnv,
@@ -75,15 +121,60 @@ def expected_sarsa_on_line_world() -> PolicyAndActionValueFunction:
     # TODO
     pass
 
-def sarsa_on_grid_world() -> PolicyAndActionValueFunction:
+def sarsa_on_grid_world(env: SingleAgentGridWorldEnv,
+                        gamma: float = 0.9999,
+                        alpha: float = 0.01,
+                        epsilon: float = 0.2,
+                        max_episodes_count: int = 10000) -> PolicyAndActionValueFunction:
     """
     Creates a Grid World of 5x5 cells (upper rightmost and lower rightmost are terminal, with -1 and 1 reward respectively)
     Launches a SARSA Algorithm in order to find the optimal epsilon-greedy Policy and its action-value function
     Returns the optimal epsilon-greedy Policy and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
-    # TODO
-    pass
+    assert (epsilon > 0)
+    assert (alpha > 0)
+    pi = np.zeros((env.state_space(), env.action_space()))
+    Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
+
+    for ep_id in range(max_episodes_count):
+        env.reset()
+        while not env.is_game_over():
+            s = env.state_id()
+            aa = env.available_actions()
+
+            if np.random.random() < epsilon:
+                a = np.random.choice(aa)
+            else:
+                best_a_idx = np.argmax(Q[s][aa])
+                a = aa[best_a_idx]
+
+            old_score = env.score()
+            env.step(a)
+            new_score = env.score()
+            r = new_score - old_score
+
+            s_p = env.state_id()
+            aa_p = env.available_actions()
+
+            # Watch out, you need to take a specific a' AND it needs to not be "game over"-like
+            if aa_p:
+                if np.random.random() < epsilon:
+                    a_p = np.random.choice(aa_p)
+                else:
+                    best_a_p_idx = np.argmax(Q[s_p][aa_p])
+                    a_p = aa_p[best_a_p_idx]
+
+            if env.is_game_over():
+                Q[s_p, :] = 0.0
+                Q[s, a] += alpha * (r - Q[s, a])
+            else:
+                Q[s, a] += alpha * (r + gamma * (Q[s_p][a_p]) - Q[s, a])
+
+            pi[s, :] = 0.0
+            pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
+
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
 
 
 def q_learning_on_grid_world(env: SingleAgentGridWorldEnv,
@@ -302,13 +393,13 @@ def expected_sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
 def demo():
     line_world = LineWorldEnv(7)
     grid_world = GridWorldEnv(5, 5)
-    print(sarsa_on_line_world())
+    print(sarsa_on_line_world(line_world))
     print(q_learning_on_line_world(line_world))
-    print(expected_sarsa_on_line_world())
+    #print(expected_sarsa_on_line_world())
 
-    print(sarsa_on_grid_world())
+    print(sarsa_on_grid_world(grid_world))
     print(q_learning_on_grid_world(grid_world))
-    print(expected_sarsa_on_grid_world())
+    #print(expected_sarsa_on_grid_world())
 
     """
     print(sarsa_on_tic_tac_toe_solo())
