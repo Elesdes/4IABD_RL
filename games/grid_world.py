@@ -73,7 +73,20 @@ class GridWorldEnv(SingleAgentGridWorldEnv):
         return self.agent_pos == (self.row_len - 1) or self.agent_pos == ((self.row_len * self.column_len) - 1)
 
     def available_actions(self) -> List[int]:
-        return [0, 1, 2, 3] if not self.is_game_over() else []  # Left, Right
+        if not self.is_game_over():
+            aa = [0, 1, 2, 3]
+            if self.state_id() in [x for x in range(0, self.row_len*self.column_len-1, self.row_len)]:
+                aa.remove(0)
+            if self.state_id() in [x for x in range(self.row_len - 1, self.row_len*self.column_len, self.row_len)]:
+                aa.remove(1)
+            if self.state_id() in [x for x in range(self.row_len * self.column_len - self.row_len, self.row_len * self.column_len)]:
+                aa.remove(2)
+            if self.state_id() in [x for x in range(0, self.row_len)]:
+                aa.remove(3)
+            return aa
+        else:
+            return []
+
 
     def step(self, action: int):
         assert (not self.is_game_over())

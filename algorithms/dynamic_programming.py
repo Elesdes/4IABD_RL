@@ -82,7 +82,7 @@ def policy_iteration_on_line_world(env: SingleAgentLineWorldEnv,
                 policy_stable = False
 
         if policy_stable:
-            return PolicyAndValueFunction(pi=return_policy_into_dict(pi), v=dict(enumerate(V.flatten(), 1)))
+            return PolicyAndValueFunction(pi=dict(enumerate(pi)), v=dict(enumerate(V.flatten(), 1)))
 
 
 def value_iteration_on_line_world(env: SingleAgentLineWorldEnv,
@@ -117,7 +117,7 @@ def value_iteration_on_line_world(env: SingleAgentLineWorldEnv,
         if delta < theta:
             break
 
-    return PolicyAndValueFunction(pi=return_policy_into_dict(pi), v=dict(enumerate(V.flatten(), 1)))
+    return PolicyAndValueFunction(pi=dict(enumerate(pi)), v=dict(enumerate(V.flatten(), 1)))
 
 def policy_evaluation_on_grid_world(env: SingleAgentGridWorldEnv,
                                     theta: float = 0.0000001) -> ValueFunction:
@@ -193,7 +193,7 @@ def policy_iteration_on_grid_world(env: SingleAgentGridWorldEnv,
                 policy_stable = False
 
         if policy_stable:
-            return PolicyAndValueFunction(pi=return_policy_into_dict(pi), v=dict(enumerate(V.flatten(), 1)))
+            return PolicyAndValueFunction(pi=dict(enumerate(pi)), v=dict(enumerate(V.flatten(), 1)))
 
 
 def value_iteration_on_grid_world(env: SingleAgentGridWorldEnv,
@@ -228,7 +228,7 @@ def value_iteration_on_grid_world(env: SingleAgentGridWorldEnv,
         if delta < theta:
             break
 
-    return PolicyAndValueFunction(pi=return_policy_into_dict(pi), v=dict(enumerate(V.flatten(), 1)))
+    return PolicyAndValueFunction(pi=dict(enumerate(pi)), v=dict(enumerate(V.flatten(), 1)))
 
 
 def policy_evaluation_on_secret_env1() -> ValueFunction:
@@ -268,18 +268,12 @@ def demo():
     line_world = LineWorldEnv(7)
     grid_world = GridWorldEnv(5,5)
     print(policy_evaluation_on_line_world(line_world))
-    line_world.reset()
     print(policy_iteration_on_line_world(line_world))
-    line_world.reset()
     print(value_iteration_on_line_world(line_world))
-    line_world.reset()
 
     print(policy_evaluation_on_grid_world(grid_world))
-    grid_world.reset()
     print(policy_iteration_on_grid_world(grid_world))
-    grid_world.reset()
     print(value_iteration_on_grid_world(grid_world))
-    grid_world.reset()
     
     print(policy_evaluation_on_secret_env1())
     print(policy_iteration_on_secret_env1())
