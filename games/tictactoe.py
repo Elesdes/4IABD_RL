@@ -11,32 +11,24 @@ class TicTacToe:
         self.player = 1
 
     def play(self, action):
-        if self.board[action] == 0:
-            self.board[action] = self.player
+        row, col = action
+        if self.board[row, col] == 0:
+            self.board[row, col] = self.player
             self.player = -self.player
             return True
         return False
 
     def is_game_over(self):
-        # Check rows
+        # Check rows, columns, and diagonals
         for row in self.board:
-            if sum(row) == 3 or sum(row) == -3:
+            if sum(row) in [3, -3]:
                 return True
-
-        # Check columns
-        for col in self.board.T:
-            if sum(col) == 3 or sum(col) == -3:
-                return True
-
-        # Check diagonals
-        if self.board[0][0] + self.board[1][1] + self.board[2][2] == 3 \
-                or self.board[0][0] + self.board[1][1] + self.board[2][2] == -3:
-            return True
-        elif self.board[0][2] + self.board[1][1] + self.board[2][0] == 3 \
-                or self.board[0][2] + self.board[1][1] + self.board[2][0] == -3:
-            return True
-
-        return False
+        return next(
+            (True for col in self.board.T if sum(col) in [3, -3]),
+            True
+            if self.board[0][0] + self.board[1][1] + self.board[2][2] in [3, -3]
+            else self.board[0][2] + self.board[1][1] + self.board[2][0] in [3, -3],
+        )
 
     def available_actions(self):
         return np.argwhere(self.board == 0)

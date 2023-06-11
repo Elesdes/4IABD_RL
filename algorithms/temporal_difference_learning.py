@@ -1,5 +1,5 @@
-from ..do_not_touch.result_structures import PolicyAndActionValueFunction
-from ..do_not_touch.single_agent_env_wrapper import Env3
+from do_not_touch.result_structures import PolicyAndActionValueFunction
+from do_not_touch.single_agent_env_wrapper import Env3
 
 
 def sarsa_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
@@ -44,7 +44,6 @@ def sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
     """
     env = Env3()
     # TODO
-    pass
 
 
 def q_learning_on_secret_env3() -> PolicyAndActionValueFunction:
@@ -56,7 +55,6 @@ def q_learning_on_secret_env3() -> PolicyAndActionValueFunction:
     """
     env = Env3()
     # TODO
-    pass
 
 
 def expected_sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
@@ -68,7 +66,6 @@ def expected_sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
     """
     env = Env3()
     # TODO
-    pass
 
 
 def demo():

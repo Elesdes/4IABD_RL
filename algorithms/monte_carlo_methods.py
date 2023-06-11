@@ -2,16 +2,19 @@ import random
 
 from games.tictactoe import TicTacToe
 
-from ..do_not_touch.result_structures import PolicyAndActionValueFunction
-from ..do_not_touch.single_agent_env_wrapper import Env2
+from do_not_touch.result_structures import PolicyAndActionValueFunction
+from do_not_touch.single_agent_env_wrapper import Env2
 
 
-def monte_carlo_es_on_tic_tac_toe_solo(env: object, num_episodes: int = 1e5, epsilon: float = 0.1) -> PolicyAndActionValueFunction:
+def monte_carlo_es_on_tic_tac_toe_solo(
+    num_episodes: int = 10000, epsilon: float = 0.1
+) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
     Launches a Monte Carlo ES (Exploring Starts) in order to find the optimal Policy and its action-value function
     Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     """
+    env = TicTacToe()
     Q = {}
     N = {}
     pi = {}
@@ -24,6 +27,9 @@ def monte_carlo_es_on_tic_tac_toe_solo(env: object, num_episodes: int = 1e5, eps
             state = env.board.copy()
             actions = env.available_actions()
 
+            if len(actions) == 0:
+                break
+
             # Generate true random values between 0 and 1
             action = (
                 random.choice(actions)
@@ -33,18 +39,26 @@ def monte_carlo_es_on_tic_tac_toe_solo(env: object, num_episodes: int = 1e5, eps
             state_actions.append((state, action))
             env.play(action)
 
-        G = env.get_return()
+        G = 0 if not env.is_game_over() else 1 if env.player == -1 else -1
+
         for state, action in state_actions:
-            key = (tuple(state.to_bytes()), tuple(action))
+            key = (tuple(state.tobytes()), tuple(action))
             N[key] = N.get(key, 0) + 1
             Q[key] = Q.get(key, 0) + (G - Q.get(key, 0)) / N[key]
-            pi[tuple(state.to_bytes())] = max(env.available_actions(),
-                                             key=lambda a: Q.get((tuple(state.to_bytes()), tuple(a)), 0))
+
+            available_actions = env.available_actions()
+            if len(available_actions) > 0:
+                pi[tuple(state.tobytes())] = max(
+                    available_actions,
+                    key=lambda a: Q.get((tuple(state.tobytes()), tuple(a)), 0),
+                )
 
     return pi
 
 
-def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
+def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> (
+    PolicyAndActionValueFunction
+):
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
     Launches an On Policy First Visit Monte Carlo Control algorithm in order to find the optimal epsilon-greedy Policy
@@ -56,7 +70,9 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
     pass
 
 
-def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
+def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> (
+    PolicyAndActionValueFunction
+):
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
     Launches an Off Policy Monte Carlo Control algorithm in order to find the optimal greedy Policy and its action-value function
@@ -75,10 +91,11 @@ def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
     """
     env = Env2()
     # TODO
-    pass
 
 
-def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunction:
+def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> (
+    PolicyAndActionValueFunction
+):
     """
     Creates a Secret Env2
     Launches an On Policy First Visit Monte Carlo Control algorithm in order to find the optimal epsilon-greedy Policy and its action-value function
@@ -87,7 +104,6 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
     """
     env = Env2()
     # TODO
-    pass
 
 
 def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunction:
@@ -99,7 +115,6 @@ def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunct
     """
     env = Env2()
     # TODO
-    pass
 
 
 def demo():

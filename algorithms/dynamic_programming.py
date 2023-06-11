@@ -1,5 +1,5 @@
-from ..do_not_touch.mdp_env_wrapper import Env1
-from ..do_not_touch.result_structures import ValueFunction, PolicyAndValueFunction
+from do_not_touch.mdp_env_wrapper import Env1
+from do_not_touch.result_structures import ValueFunction, PolicyAndValueFunction
 
 
 def policy_evaluation_on_line_world() -> ValueFunction:
@@ -69,8 +69,6 @@ def policy_evaluation_on_secret_env1() -> ValueFunction:
     Returns the Value function (V(s)) of this policy
     """
     env = Env1()
-    # TODO
-    pass
 
 
 def policy_iteration_on_secret_env1() -> PolicyAndValueFunction:
@@ -80,8 +78,6 @@ def policy_iteration_on_secret_env1() -> PolicyAndValueFunction:
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
     """
     env = Env1()
-    # TODO
-    pass
 
 
 def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
@@ -91,8 +87,6 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
     Prints the Policy (Pi(s,a)) and its Value Function (V(s))
     """
     env = Env1()
-    # TODO
-    pass
 
 
 def demo():
