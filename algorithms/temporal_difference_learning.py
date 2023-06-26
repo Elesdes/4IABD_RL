@@ -348,86 +348,10 @@ def expected_sarsa_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     pass
 
 
-def sarsa_on_secret_env1() -> PolicyAndActionValueFunction:
-    """
-    Creates a Secret Env1
-    Launches a SARSA Algorithm in order to find the optimal epsilon-greedy Policy and its action-value function
-    Returns the optimal epsilon-greedy Policy and its Action-Value function (Q(s,a))
-    Experiment with different values of hyper parameters and choose the most appropriate combination
-    """
-    env = Env3()
-    # TODO
-    pass
-
-
-def q_learning_on_secret_env1(env,
-                             gamma: float = 0.9999,
-                             alpha: float = 0.01,
-                             epsilon: float = 0.2,
-                             max_episodes_count: int = 10000) -> PolicyAndActionValueFunction:
-    """
-    Creates a Secret Env1
-    Launches a Q-Learning algorithm in order to find the optimal greedy Policy and its action-value function
-    Returns the optimal greedy Policy and its Action-Value function (Q(s,a))
-    Experiment with different values of hyper parameters and choose the most appropriate combination
-    """
-    env = Env3()
-    # TODO
-    pass
-
-
-def expected_sarsa_on_secret_env1() -> PolicyAndActionValueFunction:
-    """
-    Creates a Secret Env1
-    Launches a Expected SARSA Algorithm in order to find the optimal epsilon-greedy Policy and its action-value function
-    Returns the optimal epsilon-greedy Policy and its Action-Value function (Q(s,a))
-    Experiment with different values of hyper parameters and choose the most appropriate combination
-    """
-    env = Env3()
-    # TODO
-    pass
-
-def sarsa_on_secret_env2() -> PolicyAndActionValueFunction:
-    """
-    Creates a Secret Env2
-    Launches a SARSA Algorithm in order to find the optimal epsilon-greedy Policy and its action-value function
-    Returns the optimal epsilon-greedy Policy and its Action-Value function (Q(s,a))
-    Experiment with different values of hyper parameters and choose the most appropriate combination
-    """
-    env = Env3()
-    # TODO
-    pass
-
-
-def q_learning_on_secret_env2(env,
-                             gamma: float = 0.9999,
-                             alpha: float = 0.01,
-                             epsilon: float = 0.2,
-                             max_episodes_count: int = 10000) -> PolicyAndActionValueFunction:
-    """
-    Creates a Secret Env2
-    Launches a Q-Learning algorithm in order to find the optimal greedy Policy and its action-value function
-    Returns the optimal greedy Policy and its Action-Value function (Q(s,a))
-    Experiment with different values of hyper parameters and choose the most appropriate combination
-    """
-    env = Env3()
-    # TODO
-    pass
-
-
-def expected_sarsa_on_secret_env2() -> PolicyAndActionValueFunction:
-    """
-    Creates a Secret Env2
-    Launches a Expected SARSA Algorithm in order to find the optimal epsilon-greedy Policy and its action-value function
-    Returns the optimal epsilon-greedy Policy and its Action-Value function (Q(s,a))
-    Experiment with different values of hyper parameters and choose the most appropriate combination
-    """
-    env = Env3()
-    # TODO
-    pass
-
-
-def sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
+def sarsa_on_secret_env3(gamma: float = 0.9999,
+                         alpha: float = 0.01,
+                         epsilon: float = 0.2,
+                         max_episodes_count: int = 10000) -> PolicyAndActionValueFunction:
     """
     Creates a Secret Env3
     Launches a SARSA Algorithm in order to find the optimal epsilon-greedy Policy and its action-value function
@@ -435,12 +359,79 @@ def sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
     env = Env3()
-    # TODO
-    pass
+    assert (epsilon > 0)
+    assert (alpha > 0)
+
+    Q = {}
+    pi = {}
+
+    def choose_action(state, available_actions):
+        if np.random.random() < epsilon:
+            action = np.random.choice(available_actions)
+        else:
+            best_action = max(Q[state], key=Q[state].get)
+            action = best_action
+        return action
+
+    for ep_id in range(max_episodes_count):
+        env.reset()
+        s = env.state_id()
+        aa = env.available_actions_ids()
+
+        if s not in Q:
+            Q[s] = {}
+            pi[s] = {}
+
+        for a in aa:
+            if a not in Q[s]:
+                Q[s][a] = 0.0
+                pi[s][a] = 1.0 / len(aa)
+
+        while not env.is_game_over():
+            a = choose_action(s, aa)
+            old_score = env.score()
+            env.act_with_action_id(a)
+            new_score = env.score()
+            r = new_score - old_score
+
+            s_p = env.state_id()
+            aa_p = env.available_actions_ids()
+
+            if s_p not in Q:
+                Q[s_p] = {}
+                pi[s_p] = {}
+
+            for a_p in aa_p:
+                if a_p not in Q[s_p]:
+                    Q[s_p][a_p] = 0.0
+                    pi[s_p][a_p] = 1.0 / len(aa_p)
+
+            a_p = choose_action(s_p, aa_p)
+
+            if env.is_game_over():
+                for for_ind in Q[s_p]:
+                    Q[s_p][for_ind] = 0.0
+                Q[s][a] += alpha * (r - Q[s][a])
+            else:
+                Q[s][a] += alpha * (r + gamma * Q[s_p][a_p] - Q[s][a])
+
+            for for_ind in pi[s]:
+                pi[s][for_ind] = 0.0
+
+            max_value = 0
+            max_ind = 0
+            for ind_enum, ind_aa in enumerate(aa):
+                if Q[s][ind_aa] > max_value:
+                    max_value = Q[s][ind_aa]
+                    max_ind = ind_enum
+            pi[s][aa[max_ind]] = 1.0
+
+            #pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
+
+    return PolicyAndActionValueFunction(pi=dict(pi), q=dict(Q))
 
 
-def q_learning_on_secret_env3(env,
-                             gamma: float = 0.9999,
+def q_learning_on_secret_env3(gamma: float = 0.9999,
                              alpha: float = 0.01,
                              epsilon: float = 0.2,
                              max_episodes_count: int = 10000) -> PolicyAndActionValueFunction:
@@ -451,11 +442,69 @@ def q_learning_on_secret_env3(env,
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
     env = Env3()
-    # TODO
-    pass
+    assert (epsilon > 0)
+    assert (alpha > 0)
+
+    Q = {}
+    pi = {}
+
+    for ep_id in range(max_episodes_count):
+        env.reset()
+        s = env.state_id()
+        aa = env.available_actions_ids()
+
+        if s not in Q:
+            Q[s] = {}
+            pi[s] = {}
+
+        for a in aa:
+            if a not in Q[s]:
+                Q[s][a] = 0.0
+                pi[s][a] = 1.0 / len(aa)
+
+        while not env.is_game_over():
+            if np.random.random() < epsilon:
+                a = np.random.choice(aa)
+            else:
+                best_a = max(Q[s], key=Q[s].get)
+                a = best_a
+
+            old_score = env.score()
+            env.act_with_action_id(a)
+            new_score = env.score()
+            r = new_score - old_score
+
+            s_p = env.state_id()
+            aa_p = env.available_actions_ids()
+
+            if s_p not in Q:
+                Q[s_p] = {}
+                pi[s_p] = {}
+
+            for a_p in aa_p:
+                if a_p not in Q[s_p]:
+                    Q[s_p][a_p] = 0.0
+                    pi[s_p][a_p] = 1.0 / len(aa_p)
+
+            if env.is_game_over():
+                for for_ind in Q[s_p]:
+                    Q[s_p][for_ind] = 0.0
+                Q[s][a] += alpha * (r - Q[s][a])
+            else:
+                best_a_p = max(Q[s_p], key=Q[s_p].get)
+                Q[s][a] += alpha * (r + gamma * Q[s_p][best_a_p] - Q[s][a])
+
+            for for_ind in pi[s]:
+                pi[s][for_ind] = 0.0
+            pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
+
+    return PolicyAndActionValueFunction(pi=dict(pi), q=dict(Q))
 
 
-def expected_sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
+def expected_sarsa_on_secret_env3(gamma: float = 0.9999,
+                                  alpha: float = 0.01,
+                                  epsilon: float = 0.2,
+                                  max_episodes_count: int = 10000) -> PolicyAndActionValueFunction:
     """
     Creates a Secret Env3
     Launches a Expected SARSA Algorithm in order to find the optimal epsilon-greedy Policy and its action-value function
@@ -463,8 +512,70 @@ def expected_sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
     env = Env3()
-    # TODO
-    pass
+    assert (epsilon > 0)
+    assert (alpha > 0)
+
+    Q = {}
+    pi = {}
+
+    def choose_action(state, available_actions):
+        if np.random.random() < epsilon:
+            action = np.random.choice(available_actions)
+        else:
+            best_action = max(Q[state], key=Q[state].get)
+            action = best_action
+        return action
+
+    for ep_id in range(max_episodes_count):
+        env.reset()
+        s = env.state_id()
+        aa = env.available_actions_ids()
+
+        if s not in Q:
+            Q[s] = {}
+            pi[s] = {}
+
+        for a in aa:
+            if a not in Q[s]:
+                Q[s][a] = 0.0
+                pi[s][a] = 1.0 / len(aa)
+
+        a = choose_action(s, aa)
+
+        while not env.is_game_over():
+            old_score = env.score()
+            env.act_with_action_id(a)
+            new_score = env.score()
+            r = new_score - old_score
+
+            s_p = env.state_id()
+            aa_p = env.available_actions_ids()
+
+            if s_p not in Q:
+                Q[s_p] = {}
+                pi[s_p] = {}
+
+            for a_p in aa_p:
+                if a_p not in Q[s_p]:
+                    Q[s_p][a_p] = 0.0
+                    pi[s_p][a_p] = 1.0 / len(aa_p)
+
+            expected_value = 0
+            for a_p in aa_p:
+                prob_a_p = 1.0 - epsilon + epsilon / len(aa_p) if a_p == max(Q[s_p], key=Q[s_p].get) else epsilon / len(
+                    aa_p)
+                expected_value += prob_a_p * Q[s_p][a_p]
+
+            if env.is_game_over():
+                Q[s][a] += alpha * (r - Q[s][a])
+            else:
+                Q[s][a] += alpha * (r + gamma * expected_value - Q[s][a])
+
+            for for_ind in pi[s]:
+                pi[s][for_ind] = 0.0
+            pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
+
+    return PolicyAndActionValueFunction(pi=dict(pi), q=dict(Q))
 
 
 def demo():
@@ -482,16 +593,8 @@ def demo():
     print(sarsa_on_tic_tac_toe_solo())
     print(q_learning_on_tic_tac_toe_solo())
     print(expected_sarsa_on_tic_tac_toe_solo())
-
-    print(sarsa_on_secret_env1())
-    print(q_learning_on_secret_env1())
-    print(expected_sarsa_on_secret_env1())
-
-    print(sarsa_on_secret_env2())
-    print(q_learning_on_secret_env2())
-    print(expected_sarsa_on_secret_env2())
-
-    print(sarsa_on_secret_env3())
-    print(q_learning_on_secret_env3())
-    print(expected_sarsa_on_secret_env3())
     """
+    print(sarsa_on_secret_env3())
+    #print(q_learning_on_secret_env3())
+    #print(expected_sarsa_on_secret_env3())
+
