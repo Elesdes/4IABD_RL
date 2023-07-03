@@ -77,6 +77,9 @@ class GridWorldEnv(SingleAgentGridWorldEnv):
             self.row_len - 1,
             (self.row_len * self.column_len) - 1,
         ]
+    def is_game_won(self):
+        target_position = ((self.row_len * self.column_len) - 1)
+        return self.agent_pos == target_position
 
     def available_actions(self) -> List[int]:
         if self.is_game_over():

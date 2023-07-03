@@ -7,13 +7,13 @@ from games.grid_world import GridWorldEnv
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 800
-row_len = 5
-column_len = 5
+row_len = 7
+column_len = 1
 BUTTON_WIDTH = 500
 BUTTON_HEIGHT = 70
 BUTTON_SPACING = 20
-CELL_WIDTH = WINDOW_WIDTH // row_len
-CELL_HEIGHT = WINDOW_HEIGHT // column_len
+CELL_WIDTH = WINDOW_WIDTH // 7
+CELL_HEIGHT = WINDOW_HEIGHT // 7
 
 LIGHT_BLUE = (14, 41, 84)
 DARK_BLUE = (31, 110, 140)
