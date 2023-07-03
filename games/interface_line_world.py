@@ -2,8 +2,10 @@ import pygame
 import time
 import sys
 from algorithms.dynamic_programming import policy_evaluation_on_grid_world, policy_iteration_on_grid_world, \
-    value_iteration_on_grid_world
+    value_iteration_on_grid_world, policy_evaluation_on_line_world, policy_iteration_on_line_world, \
+    value_iteration_on_line_world
 from games.grid_world import GridWorldEnv
+from games.line_world import LineWorldEnv
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 800
@@ -12,8 +14,8 @@ column_len = 1
 BUTTON_WIDTH = 500
 BUTTON_HEIGHT = 70
 BUTTON_SPACING = 20
-CELL_WIDTH = WINDOW_WIDTH // 7
-CELL_HEIGHT = WINDOW_HEIGHT // 7
+CELL_WIDTH = WINDOW_WIDTH // row_len
+CELL_HEIGHT = WINDOW_HEIGHT // row_len
 
 LIGHT_BLUE = (14, 41, 84)
 DARK_BLUE = (31, 110, 140)
@@ -26,16 +28,16 @@ WHITE = (242, 234, 211)
 def draw_grid():
     for y in range(column_len):
         for x in range(row_len):
-            rect = pygame.Rect(x * CELL_WIDTH, y * CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT)
+            rect = pygame.Rect(x * CELL_WIDTH, y * CELL_HEIGHT + (WINDOW_WIDTH//2 - CELL_WIDTH//2), CELL_WIDTH, CELL_HEIGHT)
             pygame.draw.rect(window, WHITE, rect, 1)
-            draw_text_in_cell('Perdu', 0, column_len - 1)  # En haut à droite
-            draw_text_in_cell('Gagné', row_len - 1, column_len - 1)
+            draw_text_in_cell('Gagné', 0, row_len - 1)
+            draw_text_in_cell('Perdu', 0, 0)
 
 
 def draw_agent(agent_pos):
     x = agent_pos % row_len
     y = agent_pos // row_len
-    rect = pygame.Rect(x * CELL_WIDTH, y * CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT)
+    rect = pygame.Rect(x * CELL_WIDTH, y * CELL_HEIGHT + (WINDOW_WIDTH // 2 - CELL_WIDTH // 2), CELL_WIDTH, CELL_HEIGHT)
     pygame.draw.rect(window, ORANGE, rect)
 
 
@@ -82,25 +84,21 @@ def draw_text_in_cell(text, row, column):
     window.blit(rendered_text, text_rect)
 
 
-def get_directions(probs, row_len, col_len):
-    directions = {i: 0 for i in range(row_len * col_len)}
+def get_directions(probs, col_len):
+    directions = {i: 0 for i in range(col_len)}
+    print("directions : ",directions)
 
-    for i in range(1, row_len * col_len + 1):
-        row = (i - 1) // row_len
-        col = (i - 1) % col_len
+    for i in range(1, col_len + 1):
         neighbours = []
 
-        if col > 0:
-            neighbours.append(((row * col_len) + (col - 1)) + 1)
-        if col < col_len - 1:
-            neighbours.append(((row * col_len) + (col + 1)) + 1)
-        if row > 0:
-            neighbours.append((((row - 1) * col_len) + col) + 1)
-        if row < row_len - 1:
-            neighbours.append((((row + 1) * col_len) + col) + 1)
+        # Seules les positions gauche et droite sont considérées
+        if i > 1:  # Pour le voisin de gauche
+            neighbours.append(i - 1)
+        if i < col_len:  # Pour le voisin de droite
+            neighbours.append(i + 1)
 
-        if row_len * col_len in neighbours:
-            if row_len * col_len == i + 1:
+        if col_len in neighbours:
+            if col_len == i + 1:
                 directions[i - 1] = 1
             else:
                 directions[i - 1] = 2
@@ -111,14 +109,12 @@ def get_directions(probs, row_len, col_len):
 
         max_prob_neighbour = max(neighbours, key=probs.get)
 
+        # Les directions sont maintenant 0 pour la gauche et 1 pour la droite
         if max_prob_neighbour == i - 1:
             directions[i - 1] = 0
         elif max_prob_neighbour == i + 1:
             directions[i - 1] = 1
-        elif max_prob_neighbour < i:
-            directions[i - 1] = 3
-        else:
-            directions[i - 1] = 2
+    print("directions : ",directions)
 
     return directions
 
@@ -127,7 +123,7 @@ def play_game():
     pygame.init()
     clock = pygame.time.Clock()
     move_count = 0
-    env = GridWorldEnv(row_len, column_len)
+    env = LineWorldEnv(7)
     running = True
 
     while running:
@@ -141,14 +137,6 @@ def play_game():
                 elif event.key == pygame.K_RIGHT and 1 in env.available_actions():  # Droite
                     env.step(1)
                     move_count += 1
-                elif event.key == pygame.K_DOWN and 2 in env.available_actions():  # Bas
-                    env.step(2)
-                    move_count += 1
-                elif event.key == pygame.K_UP and 3 in env.available_actions():  # Haut
-                    env.step(3)
-                    move_count += 1
-                else:
-                    move_count += 2
 
         window.fill(LIGHT_BLUE)
         if not env.is_game_over():
@@ -246,7 +234,7 @@ def main_menu():
                     WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_COLOR)
 
         pygame.display.flip()
-        env = GridWorldEnv(row_len, column_len)
+        env = LineWorldEnv(row_len)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -255,15 +243,15 @@ def main_menu():
                 if WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2 < mouse_pos[0] < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2:
                     if WINDOW_HEIGHT / 2 - BUTTON_HEIGHT * 2 - BUTTON_SPACING * 1.5 < mouse_pos[
                         1] < WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5:
-                        policy = get_directions(policy_evaluation_on_grid_world(env), row_len, column_len)
+                        policy = get_directions(policy_evaluation_on_line_world(env), row_len)
                         play(env, policy)
                     elif WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5 < mouse_pos[
                         1] < WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5:
-                        policy = policy_iteration_on_grid_world(env).pi
+                        policy = policy_iteration_on_line_world(env).pi
                         play(env, policy)
                     elif WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5 < mouse_pos[
                         1] < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5:
-                        policy = value_iteration_on_grid_world(env).pi
+                        policy = value_iteration_on_line_world(env).pi
                         play(env, policy)
                     elif WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5 < mouse_pos[
                         1] < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2 + BUTTON_SPACING * 2.5:

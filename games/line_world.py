@@ -60,6 +60,10 @@ class LineWorldEnv(SingleAgentLineWorldEnv):
     def is_game_over(self) -> bool:
         return self.agent_pos == 0 or self.agent_pos == self.cells_count - 1
 
+    def is_game_won(self):
+        target_position = (self.cells_count - 1)
+        return self.agent_pos == target_position
+
     def available_actions(self) -> List[int]:
         return [0, 1] if not self.is_game_over() else []  # Left, Right
 

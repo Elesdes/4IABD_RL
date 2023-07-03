@@ -388,13 +388,13 @@ def value_iteration_on_secret_env1(theta: float = 0.0000001) -> PolicyAndValueFu
 def demo():
     line_world = LineWorldEnv(7)
     grid_world = GridWorldEnv(5, 5)
-    # print(policy_evaluation_on_line_world(line_world))
-    # print(policy_iteration_on_line_world(line_world))
-    # print(value_iteration_on_line_world(line_world))
+    print(policy_evaluation_on_line_world(line_world))
+    print(policy_iteration_on_line_world(line_world))
+    print(value_iteration_on_line_world(line_world))
 
-    print(policy_evaluation_on_grid_world(grid_world))
-    print(policy_iteration_on_grid_world(grid_world))
-    print(value_iteration_on_grid_world(grid_world))
+    # print(policy_evaluation_on_grid_world(grid_world))
+    # print(policy_iteration_on_grid_world(grid_world))
+    # print(value_iteration_on_grid_world(grid_world))
 
     # print(policy_evaluation_on_secret_env1())
     # print(policy_iteration_on_secret_env1())
