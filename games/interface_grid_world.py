@@ -28,7 +28,7 @@ def draw_grid():
         for x in range(row_len):
             rect = pygame.Rect(x * CELL_WIDTH, y * CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT)
             pygame.draw.rect(window, WHITE, rect, 1)
-            draw_text_in_cell('Perdu', 0, column_len - 1)  # En haut à droite
+            draw_text_in_cell('Perdu', 0, column_len - 1)
             draw_text_in_cell('Gagné', row_len - 1, column_len - 1)
 
 
@@ -40,21 +40,20 @@ def draw_agent(agent_pos):
 
 
 def draw_game_over(is_win):
-    font = pygame.font.Font(None, 74)  # Choisissez la taille de la police ici.
+    font = pygame.font.Font(None, 74)
     if is_win:
-        text = font.render('Gagné', True, WHITE)  # Affiche 'Gagné' si le joueur a gagné.
+        text = font.render('Gagné', True, WHITE)
     else:
-        text = font.render('Game Over', True, WHITE)  # Affiche 'Game Over' si le joueur a perdu.
+        text = font.render('Game Over', True, WHITE)
     text_rect = text.get_rect()
     text_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)
     window.blit(text, text_rect)
 
 
 def draw_move_count(move_count):
-    font = pygame.font.Font(None, 36)  # Choisissez la taille de la police ici.
+    font = pygame.font.Font(None, 36)
     text = font.render(f'Moves: {move_count}', True, WHITE)
-    window.blit(text, (20, 20))  # Dessine le texte en haut à gauche. Modifiez les coordonnées si vous le souhaitez.
-
+    window.blit(text, (20, 20))
 
 def draw_button(screen, text, x, y, width, height, color):
     pygame.draw.rect(screen, color, (x, y, width, height))
@@ -125,26 +124,25 @@ def get_directions(probs, row_len, col_len):
 
 def play_game():
     pygame.init()
-    clock = pygame.time.Clock()
     move_count = 0
     env = GridWorldEnv(row_len, column_len)
     running = True
 
     while running:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:  # Cliquez sur le bouton X de la fenêtre pour quitter.
+            if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT and 0 in env.available_actions():  # Gauche
+                if event.key == pygame.K_LEFT and 0 in env.available_actions():
                     env.step(0)
                     move_count += 1
-                elif event.key == pygame.K_RIGHT and 1 in env.available_actions():  # Droite
+                elif event.key == pygame.K_RIGHT and 1 in env.available_actions():
                     env.step(1)
                     move_count += 1
-                elif event.key == pygame.K_DOWN and 2 in env.available_actions():  # Bas
+                elif event.key == pygame.K_DOWN and 2 in env.available_actions():
                     env.step(2)
                     move_count += 1
-                elif event.key == pygame.K_UP and 3 in env.available_actions():  # Haut
+                elif event.key == pygame.K_UP and 3 in env.available_actions():
                     env.step(3)
                     move_count += 1
                 else:
@@ -160,6 +158,8 @@ def play_game():
             draw_move_count(move_count)
             bouble_button("exit", "rejouer")
             for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     if WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2 < mouse_pos[0] < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2:
@@ -168,7 +168,6 @@ def play_game():
                         elif WINDOW_HEIGHT / 2 + BUTTON_HEIGHT < mouse_pos[1] < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2:
                             play_game()
         pygame.display.flip()
-        clock.tick(60)
 
 
 def play(env, policy):
@@ -212,6 +211,8 @@ def play(env, policy):
             bouble_button("exit", "rejouer")
             # i = ibouble_button()
             for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     if WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2 < mouse_pos[0] < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2:

@@ -1,10 +1,8 @@
 import pygame
 import time
 import sys
-from algorithms.dynamic_programming import policy_evaluation_on_grid_world, policy_iteration_on_grid_world, \
-    value_iteration_on_grid_world, policy_evaluation_on_line_world, policy_iteration_on_line_world, \
+from algorithms.dynamic_programming import policy_evaluation_on_line_world, policy_iteration_on_line_world, \
     value_iteration_on_line_world
-from games.grid_world import GridWorldEnv
 from games.line_world import LineWorldEnv
 
 WINDOW_WIDTH = 800
@@ -42,21 +40,20 @@ def draw_agent(agent_pos):
 
 
 def draw_game_over(is_win):
-    font = pygame.font.Font(None, 74)  # Choisissez la taille de la police ici.
+    font = pygame.font.Font(None, 74)
     if is_win:
-        text = font.render('Gagné', True, WHITE)  # Affiche 'Gagné' si le joueur a gagné.
+        text = font.render('Gagné', True, WHITE)
     else:
-        text = font.render('Game Over', True, WHITE)  # Affiche 'Game Over' si le joueur a perdu.
+        text = font.render('Game Over', True, WHITE)
     text_rect = text.get_rect()
     text_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)
     window.blit(text, text_rect)
 
 
 def draw_move_count(move_count):
-    font = pygame.font.Font(None, 36)  # Choisissez la taille de la police ici.
+    font = pygame.font.Font(None, 36)
     text = font.render(f'Moves: {move_count}', True, WHITE)
-    window.blit(text, (20, 20))  # Dessine le texte en haut à gauche. Modifiez les coordonnées si vous le souhaitez.
-
+    window.blit(text, (20, 20))
 
 def draw_button(screen, text, x, y, width, height, color):
     pygame.draw.rect(screen, color, (x, y, width, height))
@@ -91,10 +88,9 @@ def get_directions(probs, col_len):
     for i in range(1, col_len + 1):
         neighbours = []
 
-        # Seules les positions gauche et droite sont considérées
-        if i > 1:  # Pour le voisin de gauche
+        if i > 1:
             neighbours.append(i - 1)
-        if i < col_len:  # Pour le voisin de droite
+        if i < col_len:
             neighbours.append(i + 1)
 
         if col_len in neighbours:
@@ -109,7 +105,6 @@ def get_directions(probs, col_len):
 
         max_prob_neighbour = max(neighbours, key=probs.get)
 
-        # Les directions sont maintenant 0 pour la gauche et 1 pour la droite
         if max_prob_neighbour == i - 1:
             directions[i - 1] = 0
         elif max_prob_neighbour == i + 1:
@@ -121,20 +116,19 @@ def get_directions(probs, col_len):
 
 def play_game():
     pygame.init()
-    clock = pygame.time.Clock()
     move_count = 0
     env = LineWorldEnv(7)
     running = True
 
     while running:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:  # Cliquez sur le bouton X de la fenêtre pour quitter.
+            if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT and 0 in env.available_actions():  # Gauche
+                if event.key == pygame.K_LEFT and 0 in env.available_actions():
                     env.step(0)
                     move_count += 1
-                elif event.key == pygame.K_RIGHT and 1 in env.available_actions():  # Droite
+                elif event.key == pygame.K_RIGHT and 1 in env.available_actions():
                     env.step(1)
                     move_count += 1
 
@@ -148,6 +142,8 @@ def play_game():
             draw_move_count(move_count)
             bouble_button("exit", "rejouer")
             for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     if WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2 < mouse_pos[0] < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2:
@@ -156,7 +152,6 @@ def play_game():
                         elif WINDOW_HEIGHT / 2 + BUTTON_HEIGHT < mouse_pos[1] < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2:
                             play_game()
         pygame.display.flip()
-        clock.tick(60)
 
 
 def play(env, policy):
@@ -198,8 +193,9 @@ def play(env, policy):
             draw_game_over(env.is_game_won())
             draw_move_count(move_count)
             bouble_button("exit", "rejouer")
-            # i = ibouble_button()
             for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     if WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2 < mouse_pos[0] < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2:
