@@ -50,7 +50,7 @@ class GridWorldEnv(SingleAgentGridWorldEnv):
         self.column_len = column_len
         self.agent_pos = -1
         self.reset()
-
+        
         """
         self.S = [0, 1, 2, 3, 4,
                         5, 6, 7, 8, 9,
@@ -78,9 +78,8 @@ class GridWorldEnv(SingleAgentGridWorldEnv):
             self.row_len - 1,
             (self.row_len * self.column_len) - 1,
         ]
-
     def is_game_won(self):
-        target_position = (self.row_len * self.column_len) - 1
+        target_position = ((self.row_len * self.column_len) - 1)
         return self.agent_pos == target_position
 
     def available_actions(self) -> List[int]:
