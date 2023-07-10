@@ -6,7 +6,7 @@ from games.tictactoe import TicTacToe
 
 
 def monte_carlo_es_on_tic_tac_toe_solo(
-        num_episodes: int = 10000, epsilon: float = 0.1
+    num_episodes: int = 10000, epsilon: float = 0.1
 ) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
@@ -19,7 +19,9 @@ def monte_carlo_es_on_tic_tac_toe_solo(
     for _ in range(num_episodes):
         env.reset()
         # Random initial action for exploring start
-        initial_action = tuple(env.available_actions()[np.random.randint(len(env.available_actions()))])
+        initial_action = tuple(
+            env.available_actions()[np.random.randint(len(env.available_actions()))]
+        )
         env.play(initial_action)
         episode_history = [(tuple(env.board.flatten()), initial_action)]
         while not env.is_game_over():
@@ -44,7 +46,9 @@ def monte_carlo_es_on_tic_tac_toe_solo(
                 visit_counts[state][action] = 0
 
             visit_counts[state][action] += 1
-            q[state][action] += (reward - q[state][action]) / visit_counts[state][action]
+            q[state][action] += (reward - q[state][action]) / visit_counts[state][
+                action
+            ]
             reward = -reward
 
     pi = {state: max(q[state], key=q[state].get) for state in q}
@@ -52,7 +56,7 @@ def monte_carlo_es_on_tic_tac_toe_solo(
 
 
 def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo(
-        num_episodes: int = 10000, epsilon: float = 0.1
+    num_episodes: int = 10000, epsilon: float = 0.1
 ) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
@@ -105,7 +109,7 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo(
 
 
 def off_policy_monte_carlo_control_on_tic_tac_toe_solo(
-        num_episodes: int = 10000, epsilon: float = 0.1
+    num_episodes: int = 10000, epsilon: float = 0.1
 ) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
@@ -154,7 +158,11 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo(
 
             a_star = max(Pi[state], key=Pi[state].get)
             for a in Pi[state]:
-                Pi[state][a] = 1 - epsilon + epsilon / num_actions if a == a_star else epsilon / num_actions
+                Pi[state][a] = (
+                    1 - epsilon + epsilon / num_actions
+                    if a == a_star
+                    else epsilon / num_actions
+                )
 
             if action != a_star:
                 break
@@ -173,7 +181,7 @@ def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
 
 
 def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> (
-        PolicyAndActionValueFunction
+    PolicyAndActionValueFunction
 ):
     """
     Creates a Secret Env2

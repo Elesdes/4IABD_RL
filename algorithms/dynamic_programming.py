@@ -1,10 +1,10 @@
-from do_not_touch.mdp_env_wrapper import Env1
-from do_not_touch.result_structures import ValueFunction, PolicyAndValueFunction
 import numpy as np
-from games.line_world import LineWorldEnv, SingleAgentLineWorldEnv
-from games.grid_world import GridWorldEnv, SingleAgentGridWorldEnv
+
 from do_not_touch.mdp_env_wrapper import Env1
-from do_not_touch.result_structures import ValueFunction, PolicyAndValueFunction, Policy
+from do_not_touch.result_structures import (Policy, PolicyAndValueFunction,
+                                            ValueFunction)
+from games.grid_world import GridWorldEnv, SingleAgentGridWorldEnv
+from games.line_world import LineWorldEnv, SingleAgentLineWorldEnv
 
 
 def policy_evaluation_on_line_world(

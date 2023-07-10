@@ -1,8 +1,11 @@
 import pygame
 import time
 import sys
-from algorithms.dynamic_programming import policy_evaluation_on_line_world, policy_iteration_on_line_world, \
-    value_iteration_on_line_world
+from algorithms.dynamic_programming import (
+    policy_evaluation_on_line_world,
+    policy_iteration_on_line_world,
+    value_iteration_on_line_world,
+)
 from games.line_world import LineWorldEnv
 
 WINDOW_WIDTH = 800
@@ -26,25 +29,35 @@ WHITE = (242, 234, 211)
 def draw_grid():
     for y in range(column_len):
         for x in range(row_len):
-            rect = pygame.Rect(x * CELL_WIDTH, y * CELL_HEIGHT + (WINDOW_WIDTH//2 - CELL_WIDTH//2), CELL_WIDTH, CELL_HEIGHT)
+            rect = pygame.Rect(
+                x * CELL_WIDTH,
+                y * CELL_HEIGHT + (WINDOW_WIDTH // 2 - CELL_WIDTH // 2),
+                CELL_WIDTH,
+                CELL_HEIGHT,
+            )
             pygame.draw.rect(window, WHITE, rect, 1)
-            draw_text_in_cell('Gagné', 0, row_len - 1)
-            draw_text_in_cell('Perdu', 0, 0)
+            draw_text_in_cell("Gagné", 0, row_len - 1)
+            draw_text_in_cell("Perdu", 0, 0)
 
 
 def draw_agent(agent_pos):
     x = agent_pos % row_len
     y = agent_pos // row_len
-    rect = pygame.Rect(x * CELL_WIDTH, y * CELL_HEIGHT + (WINDOW_WIDTH // 2 - CELL_WIDTH // 2), CELL_WIDTH, CELL_HEIGHT)
+    rect = pygame.Rect(
+        x * CELL_WIDTH,
+        y * CELL_HEIGHT + (WINDOW_WIDTH // 2 - CELL_WIDTH // 2),
+        CELL_WIDTH,
+        CELL_HEIGHT,
+    )
     pygame.draw.rect(window, ORANGE, rect)
 
 
 def draw_game_over(is_win):
     font = pygame.font.Font(None, 74)
     if is_win:
-        text = font.render('Gagné', True, WHITE)
+        text = font.render("Gagné", True, WHITE)
     else:
-        text = font.render('Game Over', True, WHITE)
+        text = font.render("Game Over", True, WHITE)
     text_rect = text.get_rect()
     text_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)
     window.blit(text, text_rect)
@@ -52,21 +65,42 @@ def draw_game_over(is_win):
 
 def draw_move_count(move_count):
     font = pygame.font.Font(None, 36)
-    text = font.render(f'Moves: {move_count}', True, WHITE)
+    text = font.render(f"Moves: {move_count}", True, WHITE)
     window.blit(text, (20, 20))
+
 
 def draw_button(screen, text, x, y, width, height, color):
     pygame.draw.rect(screen, color, (x, y, width, height))
     font = pygame.font.Font(None, 50)
     text = font.render(text, 1, WHITE)
-    screen.blit(text, (x + (width / 2 - text.get_width() / 2), y + (height / 2 - text.get_height() / 2)))
+    screen.blit(
+        text,
+        (
+            x + (width / 2 - text.get_width() / 2),
+            y + (height / 2 - text.get_height() / 2),
+        ),
+    )
 
 
 def bouble_button(name1, name2):
-    draw_button(window, name1, WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2, WINDOW_HEIGHT / 2 - BUTTON_HEIGHT,
-                BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_COLOR)
-    draw_button(window, name2, WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2, WINDOW_HEIGHT / 2 + BUTTON_HEIGHT,
-                BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_COLOR)
+    draw_button(
+        window,
+        name1,
+        WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
+        WINDOW_HEIGHT / 2 - BUTTON_HEIGHT,
+        BUTTON_WIDTH,
+        BUTTON_HEIGHT,
+        BUTTON_COLOR,
+    )
+    draw_button(
+        window,
+        name2,
+        WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
+        WINDOW_HEIGHT / 2 + BUTTON_HEIGHT,
+        BUTTON_WIDTH,
+        BUTTON_HEIGHT,
+        BUTTON_COLOR,
+    )
 
 
 def draw_text_in_cell(text, row, column):
@@ -83,7 +117,7 @@ def draw_text_in_cell(text, row, column):
 
 def get_directions(probs, col_len):
     directions = {i: 0 for i in range(col_len)}
-    print("directions : ",directions)
+    print("directions : ", directions)
 
     for i in range(1, col_len + 1):
         neighbours = []
@@ -109,7 +143,7 @@ def get_directions(probs, col_len):
             directions[i - 1] = 0
         elif max_prob_neighbour == i + 1:
             directions[i - 1] = 1
-    print("directions : ",directions)
+    print("directions : ", directions)
 
     return directions
 
@@ -146,10 +180,22 @@ def play_game():
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
-                    if WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2 < mouse_pos[0] < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2:
-                        if WINDOW_HEIGHT / 2 - BUTTON_HEIGHT < mouse_pos[1] < WINDOW_HEIGHT / 2:
+                    if (
+                        WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2
+                        < mouse_pos[0]
+                        < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2
+                    ):
+                        if (
+                            WINDOW_HEIGHT / 2 - BUTTON_HEIGHT
+                            < mouse_pos[1]
+                            < WINDOW_HEIGHT / 2
+                        ):
                             running = False
-                        elif WINDOW_HEIGHT / 2 + BUTTON_HEIGHT < mouse_pos[1] < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2:
+                        elif (
+                            WINDOW_HEIGHT / 2 + BUTTON_HEIGHT
+                            < mouse_pos[1]
+                            < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2
+                        ):
                             play_game()
         pygame.display.flip()
 
@@ -198,10 +244,22 @@ def play(env, policy):
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
-                    if WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2 < mouse_pos[0] < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2:
-                        if WINDOW_HEIGHT / 2 - BUTTON_HEIGHT < mouse_pos[1] < WINDOW_HEIGHT / 2:
+                    if (
+                        WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2
+                        < mouse_pos[0]
+                        < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2
+                    ):
+                        if (
+                            WINDOW_HEIGHT / 2 - BUTTON_HEIGHT
+                            < mouse_pos[1]
+                            < WINDOW_HEIGHT / 2
+                        ):
                             running = False
-                        elif WINDOW_HEIGHT / 2 + BUTTON_HEIGHT < mouse_pos[1] < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2:
+                        elif (
+                            WINDOW_HEIGHT / 2 + BUTTON_HEIGHT
+                            < mouse_pos[1]
+                            < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2
+                        ):
                             play(env, policy)
 
         pygame.display.flip()
@@ -219,15 +277,42 @@ def main_menu():
     while running:
         window.fill(LIGHT_BLUE)
 
-        draw_button(window, "Play with policy evaluation", WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
-                    WINDOW_HEIGHT / 2 - BUTTON_HEIGHT * 2 - BUTTON_SPACING * 1.5, BUTTON_WIDTH, BUTTON_HEIGHT,
-                    BUTTON_COLOR)
-        draw_button(window, "Play with policy iteration", WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
-                    WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_COLOR)
-        draw_button(window, "Play with value iteration", WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
-                    WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_COLOR)
-        draw_button(window, "Play Game", WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
-                    WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_COLOR)
+        draw_button(
+            window,
+            "Play with policy evaluation",
+            WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
+            WINDOW_HEIGHT / 2 - BUTTON_HEIGHT * 2 - BUTTON_SPACING * 1.5,
+            BUTTON_WIDTH,
+            BUTTON_HEIGHT,
+            BUTTON_COLOR,
+        )
+        draw_button(
+            window,
+            "Play with policy iteration",
+            WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
+            WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5,
+            BUTTON_WIDTH,
+            BUTTON_HEIGHT,
+            BUTTON_COLOR,
+        )
+        draw_button(
+            window,
+            "Play with value iteration",
+            WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
+            WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5,
+            BUTTON_WIDTH,
+            BUTTON_HEIGHT,
+            BUTTON_COLOR,
+        )
+        draw_button(
+            window,
+            "Play Game",
+            WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
+            WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5,
+            BUTTON_WIDTH,
+            BUTTON_HEIGHT,
+            BUTTON_COLOR,
+        )
 
         pygame.display.flip()
         env = LineWorldEnv(row_len)
@@ -236,21 +321,39 @@ def main_menu():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                if WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2 < mouse_pos[0] < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2:
-                    if WINDOW_HEIGHT / 2 - BUTTON_HEIGHT * 2 - BUTTON_SPACING * 1.5 < mouse_pos[
-                        1] < WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5:
-                        policy = get_directions(policy_evaluation_on_line_world(env), row_len)
+                if (
+                    WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2
+                    < mouse_pos[0]
+                    < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2
+                ):
+                    if (
+                        WINDOW_HEIGHT / 2 - BUTTON_HEIGHT * 2 - BUTTON_SPACING * 1.5
+                        < mouse_pos[1]
+                        < WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5
+                    ):
+                        policy = get_directions(
+                            policy_evaluation_on_line_world(env), row_len
+                        )
                         play(env, policy)
-                    elif WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5 < mouse_pos[
-                        1] < WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5:
+                    elif (
+                        WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5
+                        < mouse_pos[1]
+                        < WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5
+                    ):
                         policy = policy_iteration_on_line_world(env).pi
                         play(env, policy)
-                    elif WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5 < mouse_pos[
-                        1] < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5:
+                    elif (
+                        WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5
+                        < mouse_pos[1]
+                        < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5
+                    ):
                         policy = value_iteration_on_line_world(env).pi
                         play(env, policy)
-                    elif WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5 < mouse_pos[
-                        1] < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2 + BUTTON_SPACING * 2.5:
+                    elif (
+                        WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5
+                        < mouse_pos[1]
+                        < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2 + BUTTON_SPACING * 2.5
+                    ):
                         play_game()
 
         clock.tick(60)
