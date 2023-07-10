@@ -42,3 +42,4 @@ if __name__ == "__main__":
     game.print_board()
     game.reset()
     game.print_board()
+    
