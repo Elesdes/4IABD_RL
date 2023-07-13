@@ -471,7 +471,7 @@ def sarsa_on_secret_env3(
             r = new_score - old_score
 
             s_p = env.state_id()
-            aa_p = env.available_actions_ids()
+            aa_p = np.copy(env.available_actions_ids())
 
             if s_p not in Q:
                 Q[s_p] = {}
@@ -523,75 +523,70 @@ def q_learning_on_secret_env3(
     assert epsilon > 0
     assert alpha > 0
 
-    # pi = np.zeros((env.state_space(), env.action_space()))
-    # Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
-    pi = np.empty(0)
-    Q = np.empty(0)
+    Q = {}
+    pi = {}
+    def choose_action(state, available_actions):
+        if np.random.random() < epsilon:
+            action = np.random.choice(available_actions)
+        else:
+            best_action = max(Q[state], key=Q[state].get)
+            action = best_action
+        return action
 
     for ep_id in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
-            pi_dict = dict(((j, i), pi[i][j]) for i in range(len(pi)) for j in range(len(pi[0])) if i < j)
-            Q_dict = dict(((j, i), Q[i][j]) for i in range(len(Q)) for j in range(len(Q[0])) if i < j)
-
             s = env.state_id()
-            aa = env.available_actions_ids()
+            aa = np.copy(env.available_actions_ids())
 
-            if s not in Q_dict:
-                Q_dict[s] = {}
-                for single_action in aa:
-                    Q_dict[s][single_action] = 0.0
+            if s not in Q:
+                Q[s] = {}
+                pi[s] = {}
 
-            if s not in pi_dict:
-                pi_dict[s] = {}
-                for single_action in aa:
-                    pi_dict[s][single_action] = 0.0
+            for a in aa:
+                if a not in Q[s]:
+                    Q[s][a] = 0.0
+                    pi[s][a] = 1.0 / len(aa)
 
-            pi_dict = {0: {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0, 6: 0.0, 7: 0.0, 8: 0.0, 9: 0.0},
-                       1: {0: 0.1, 10: 0.4}}
-            pi = np.array([list(pi_dict[key].values()) for key in pi_dict])
-            Q = np.array([list(Q_dict[key].values()) for key in Q_dict])
-
-            if np.random.random() < epsilon:
-                a = np.random.choice(aa)
-            else:
-                best_a_idx = np.argmax(Q[s][aa])
-                a = aa[best_a_idx]
-
+            a = choose_action(s, aa)
             old_score = env.score()
             env.act_with_action_id(a)
             new_score = env.score()
             r = new_score - old_score
 
             s_p = env.state_id()
-            aa_p = env.available_actions_ids()
+            aa_p = np.copy(env.available_actions_ids())
+            if s_p not in Q:
+                Q[s_p] = {}
+                pi[s_p] = {}
 
-            if s_p not in Q_dict:
-                Q_dict[s_p] = {}
-                for single_action in aa_p:
-                    Q_dict[s_p][single_action] = 0.0
-
-            if s_p not in pi_dict:
-                pi_dict[s_p] = {}
-                for single_action in aa_p:
-                    pi_dict[s_p][single_action] = 0.0
-
-            pi = np.array([list(pi_dict[key].values()) for key in pi_dict])
-            Q = np.array([list(Q_dict[key].values()) for key in Q_dict])
+            for a_p in aa_p:
+                if a_p not in Q[s_p]:
+                    Q[s_p][a_p] = 0.0
+                    pi[s_p][a_p] = 1.0 / len(aa_p)
 
             if env.is_game_over():
-                Q[s_p, :] = 0.0
+                for for_ind in Q[s_p]:
+                    Q[s_p][for_ind] = 0.0
                 Q[s][a] += alpha * (r - Q[s][a])
             else:
-                try:
-                    Q[s][a] += alpha * (r + gamma * np.max(Q[s_p][aa_p]) - Q[s][a])
-                except IndexError:
-                    print(s_p, aa_p)
+                Q[s][a] += alpha * (r + gamma * max(Q[s_p].values()) - Q[s][a])
 
-            pi[s, :] = 0.0
-            pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
+            for for_ind in pi[s]:
+                pi[s][for_ind] = 0.0
 
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+            max_value = 0
+            max_a = 0
+            for enum_a, a in enumerate(aa):
+                if Q[s][a] > max_value:
+                    max_value = Q[s][a]
+                    max_a = enum_a
+            # pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
+            pi[s][aa[max_a]] = 1.0
+            #pi[s, :] = 0.0
+            #pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
+
+    return PolicyAndActionValueFunction(pi=dict(pi), q=dict(Q))
 
 def expected_sarsa_on_secret_env3(
     gamma: float = 0.9999,
@@ -621,7 +616,6 @@ def expected_sarsa_on_secret_env3(
     for ep_id in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
-            # /// Couper de la ligne au dessus
             s = env.state_id()
             aa = np.copy(env.available_actions_ids())
 
@@ -635,17 +629,13 @@ def expected_sarsa_on_secret_env3(
                     pi[s][a] = 1.0 / len(aa)
 
             a = choose_action(s, aa)
-            # ///
-
             old_score = env.score()
-            # /!\ il faut faire les available action ids dans a!
-            # env.available_actions_ids()
             env.act_with_action_id(a)
             new_score = env.score()
             r = new_score - old_score
 
             s_p = env.state_id()
-            aa_p = env.available_actions_ids()
+            aa_p = np.copy(env.available_actions_ids())
 
             if s_p not in Q:
                 Q[s_p] = {}
@@ -699,7 +689,7 @@ def demo():
     # print(q_learning_on_tic_tac_toe_solo(tictactoe))
     # print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
 
-    print(sarsa_on_secret_env3())
-    # print(q_learning_on_secret_env3())
+    # print(sarsa_on_secret_env3())
+    print(q_learning_on_secret_env3())
     # print(expected_sarsa_on_secret_env3())
     print("End")
