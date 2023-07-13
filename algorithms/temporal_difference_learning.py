@@ -451,19 +451,19 @@ def sarsa_on_secret_env3(
 
     for ep_id in range(max_episodes_count):
         env.reset()
-        s = env.state_id()
-        aa = env.available_actions_ids()
-
-        if s not in Q:
-            Q[s] = {}
-            pi[s] = {}
-
-        for a in aa:
-            if a not in Q[s]:
-                Q[s][a] = 0.0
-                pi[s][a] = 1.0 / len(aa)
-
         while not env.is_game_over():
+            s = env.state_id()
+            aa = np.copy(env.available_actions_ids())
+
+            if s not in Q:
+                Q[s] = {}
+                pi[s] = {}
+
+            for a in aa:
+                if a not in Q[s]:
+                    Q[s][a] = 0.0
+                    pi[s][a] = 1.0 / len(aa)
+
             a = choose_action(s, aa)
             old_score = env.score()
             env.act_with_action_id(a)
@@ -495,14 +495,14 @@ def sarsa_on_secret_env3(
                 pi[s][for_ind] = 0.0
 
             max_value = 0
-            max_ind = 0
-            for ind_enum, ind_aa in enumerate(aa):
-                if Q[s][ind_aa] > max_value:
-                    max_value = Q[s][ind_aa]
-                    max_ind = ind_enum
-            pi[s][aa[max_ind]] = 1.0
+            max_a = 0
+            for enum_a, a in enumerate(aa):
+                if Q[s][a] > max_value:
+                    max_value = Q[s][a]
+                    max_a = enum_a
 
             # pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
+            pi[s][aa[max_a]] = 1.0
 
     return PolicyAndActionValueFunction(pi=dict(pi), q=dict(Q))
 
@@ -578,7 +578,6 @@ def q_learning_on_secret_env3(
 
             pi = np.array([list(pi_dict[key].values()) for key in pi_dict])
             Q = np.array([list(Q_dict[key].values()) for key in Q_dict])
-            print(Q)
 
             if env.is_game_over():
                 Q[s_p, :] = 0.0
@@ -700,7 +699,7 @@ def demo():
     # print(q_learning_on_tic_tac_toe_solo(tictactoe))
     # print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
 
-    # print(sarsa_on_secret_env3())
+    print(sarsa_on_secret_env3())
     # print(q_learning_on_secret_env3())
-    print(expected_sarsa_on_secret_env3())
+    # print(expected_sarsa_on_secret_env3())
     print("End")
