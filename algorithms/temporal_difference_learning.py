@@ -397,7 +397,7 @@ def sarsa_on_tic_tac_toe_solo(env: TicTacToe,
 
 
 def q_learning_on_tic_tac_toe_solo(
-    env,
+    env: TicTacToe,
     gamma: float = 0.9999,
     alpha: float = 0.01,
     epsilon: float = 0.2,
@@ -409,8 +409,56 @@ def q_learning_on_tic_tac_toe_solo(
     Returns the optimal greedy Policy and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
-    # TODO
-    pass
+    assert epsilon > 0
+    assert alpha > 0
+    pi = np.zeros((2, 9))
+    Q = np.random.uniform(-1.0, 1.0, (2, 9))
+
+    for ep_id in range(max_episodes_count):
+        env.reset()
+        while not env.is_game_over():
+            if env.player == -1:
+                s = 0
+            else:
+                s = env.player
+            aa = env.available_actions()
+
+            if np.random.random() < epsilon:
+                # a = np.random.choice(aa)
+                a = aa[np.random.randint(aa.shape[0], size=1), :][0]
+            else:
+                #print(np.argmax(Q[s][aa]), " ", Q[s] , " ", s, " ", aa, " ", [case[0] * 3 + case[1] for case in aa], " ",env.is_game_over(), "\n------")
+                best_a_idx = np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])
+                a = (np.array(((0,0),(0,1),(0,2),(1,0),(1,1),(1,2),(2,0),(2,1),(2,2))))[best_a_idx]
+            if env.is_game_over():
+                old_score = -env.player
+                env.play(a)
+                new_score = -env.player
+            else:
+                old_score = 0
+                env.play(a)
+                if env.is_game_over():
+                    new_score = env.player
+                else:
+                    new_score = 0
+            r = new_score - old_score
+
+            if env.player == -1:
+                s_p = 0
+            else:
+                s_p = env.player
+            aa_p = env.available_actions()
+
+            if env.is_game_over() or len(aa_p) == 0:
+                #Q[s_p, :] = 0.0
+                Q[s, (a[0] * 3 + a[1])] += alpha * (r - Q[s, (a[0] * 3 + a[1])])
+            else:
+                Q[s, (a[0] * 3 + a[1])] += alpha * (r + gamma * np.max(Q[s_p][aa_p]) - Q[s, (a[0] * 3 + a[1])])
+
+            #pi[s, :] = 0.0
+            pi[s, aa[np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])]] = 1.0
+
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
 
 
 def expected_sarsa_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
@@ -686,10 +734,10 @@ def demo():
     """
 
     # print(sarsa_on_tic_tac_toe_solo(tictactoe))
-    # print(q_learning_on_tic_tac_toe_solo(tictactoe))
+    print(q_learning_on_tic_tac_toe_solo(tictactoe))
     # print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
 
     # print(sarsa_on_secret_env3())
-    print(q_learning_on_secret_env3())
+    # print(q_learning_on_secret_env3())
     # print(expected_sarsa_on_secret_env3())
     print("End")

@@ -1,4 +1,7 @@
+import math
+
 import numpy as np
+
 
 class TicTacToe:
     def __init__(self):
@@ -23,7 +26,9 @@ class TicTacToe:
         return False
 
     def is_game_over(self):
-        # Check rows, columns, and diagonals 
+        # Check rows, columns, and diagonals
+        if len(np.argwhere(self.board == 0)) == 0:
+            return True
         for row in self.board:
             if sum(row) in [3, -3]:
                 return True
@@ -36,9 +41,12 @@ class TicTacToe:
 
     def available_actions(self):
         return np.argwhere(self.board == 0)
-    
+
     def state_space(self):
         return self.num_cells
+
+    def available_actions_modified(self):
+        return np.argwhere(self.board.flatten() == 0)
 
     def print_board(self):
         print(self.board)
@@ -46,10 +54,12 @@ class TicTacToe:
     def get_winner(self):
         return self.winner
 
+    def convert_into_id(self, case):
+        pass
+
 
 if __name__ == "__main__":
     game = TicTacToe()
     game.print_board()
     game.reset()
     game.print_board()
-    
