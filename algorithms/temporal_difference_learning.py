@@ -343,41 +343,25 @@ def sarsa_on_tic_tac_toe_solo(env: TicTacToe,
     Returns the optimal epsilon-greedy Policy and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
-    assert (epsilon > 0)
-    assert (alpha > 0)
-    pi = np.zeros((9, 2))
-    Q = np.random.uniform(-1.0, 1.0, (9, 2))
+    assert epsilon > 0
+    assert alpha > 0
+    pi = np.zeros((2, 9))
+    Q = np.random.uniform(-1.0, 1.0, (2, 9))
 
     for ep_id in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
-            s = env.available_actions()
-            aa = env.available_actions()
-            """
-            temp = env.available_actions()
-            s = np.zeros(9, dtype=int)
-            aa = np.zeros(9, dtype=int)
-            for i_e, elem in enumerate(temp):
-                s[i_e] = elem[0] * 3 + elem[1]
-                aa[i_e] = elem[0] * 3 + elem[1]
-            """
-            if np.random.random() < epsilon:
-                print(aa)
-                a = np.random.choice(aa)
-                print(a)
+            if env.player == -1:
+                s = 0
             else:
-                temp_aa = np.zeros(len(aa), dtype=int)
-                temp_s = np.zeros(len(s), dtype=int)
-                for i_e, elem in enumerate(aa):
-                    temp_aa[i_e] = elem[0] * 3 + elem[1]
-                for i_e, elem in enumerate(s):
-                    temp_s[i_e] = elem[0] * 3 + elem[1]
-                best_a_idx = np.argmax(Q[temp_s][temp_aa])
-                if best_a_idx%2==0:
-                    best_a_idx = [int(best_a_idx/2), 0]
-                else:
-                    best_a_idx = [int((best_a_idx-1) / 2), 1]
-                a = aa[best_a_idx]
+                s = env.player
+            aa = env.available_actions()
+
+            if np.random.random() < epsilon:
+                a = aa[np.random.randint(aa.shape[0], size=1), :][0]
+            else:
+                best_a_idx = np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])
+                a = (np.array(((0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2))))[best_a_idx]
 
             if env.is_game_over():
                 old_score = -env.player
@@ -392,8 +376,30 @@ def sarsa_on_tic_tac_toe_solo(env: TicTacToe,
                     new_score = 0
             r = new_score - old_score
 
-            s_p = env.available_actions()
+            if env.player == -1:
+                s_p = 0
+            else:
+                s_p = env.player
             aa_p = env.available_actions()
+
+            # Watch out, you need to take a specific a' AND it needs to not be "game over"-like
+            if len(aa_p) > 0:
+                if np.random.random() < epsilon:
+                    a_p = aa_p[np.random.randint(aa_p.shape[0], size=1), :][0]
+                else:
+                    best_a_p_idx = np.argmax(Q[s_p][[case[0] * 3 + case[1] for case in aa_p]])
+                    a_p = (np.array(((0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2))))[best_a_p_idx]
+
+            if env.is_game_over():
+                #Q[s_p, :] = 0.0
+                Q[s, (a[0] * 3 + a[1])] += alpha * (r - Q[s, (a[0] * 3 + a[1])])
+            else:
+                Q[s, (a[0] * 3 + a[1])] += alpha * (r + gamma * (Q[s_p, (a_p[0] * 3 + a_p[1])]) - Q[s, (a[0] * 3 + a[1])])
+
+            #pi[s, :] = 0.0
+            pi[s, aa[np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])]] = 1.0
+
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
 
 
 def q_learning_on_tic_tac_toe_solo(
@@ -733,8 +739,8 @@ def demo():
     print(expected_sarsa_on_grid_world(grid_world))
     """
 
-    # print(sarsa_on_tic_tac_toe_solo(tictactoe))
-    print(q_learning_on_tic_tac_toe_solo(tictactoe))
+    print(sarsa_on_tic_tac_toe_solo(tictactoe))
+    # print(q_learning_on_tic_tac_toe_solo(tictactoe))
     # print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
 
     # print(sarsa_on_secret_env3())
