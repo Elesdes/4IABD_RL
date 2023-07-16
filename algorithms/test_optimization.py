@@ -1,6 +1,10 @@
+import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import pandas as pd
+import csv
 from do_not_touch.result_structures import PolicyAndActionValueFunction
 from do_not_touch.single_agent_env_wrapper import Env3
 from games.grid_world import GridWorldEnv, SingleAgentGridWorldEnv
@@ -91,8 +95,12 @@ def q_learning_on_line_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
+    steps_per_episode = np.zeros(max_episodes_count)
+    episode_times = np.zeros(max_episodes_count)
+    start_time = time.time()
     for ep_id in range(max_episodes_count):
         env.reset()
+        steps = 0
         while not env.is_game_over():
             s = env.state_id()
             aa = env.available_actions()
@@ -105,6 +113,7 @@ def q_learning_on_line_world(
 
             old_score = env.score()
             env.step(a)
+            steps += 1
             new_score = env.score()
             r = new_score - old_score
 
@@ -120,7 +129,9 @@ def q_learning_on_line_world(
             pi[s, :] = 0.0
             pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
 
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+        steps_per_episode[ep_id] = steps
+        episode_times[ep_id] = time.time() - start_time
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q))), steps_per_episode, episode_times
 
 
 def expected_sarsa_on_line_world(
@@ -141,8 +152,12 @@ def expected_sarsa_on_line_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
+    steps_per_episode = np.zeros(max_episodes_count)
+    episode_times = np.zeros(max_episodes_count)
+    start_time = time.time()
     for ep_id in range(max_episodes_count):
         env.reset()
+        steps = 0
         while not env.is_game_over():
             s = env.state_id()
             aa = env.available_actions()
@@ -155,6 +170,7 @@ def expected_sarsa_on_line_world(
 
             old_score = env.score()
             env.step(a)
+            steps += 1
             new_score = env.score()
             r = new_score - old_score
 
@@ -170,8 +186,9 @@ def expected_sarsa_on_line_world(
 
             pi[s, :] = 0.0
             pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
-
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+        steps_per_episode[ep_id] = steps
+        episode_times[ep_id] = time.time() - start_time
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q))), steps_per_episode, episode_times
 
 
 def sarsa_on_grid_world(
@@ -192,8 +209,12 @@ def sarsa_on_grid_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
+    steps_per_episode = np.zeros(max_episodes_count)
+    episode_times = np.zeros(max_episodes_count)
+    start_time = time.time()
     for ep_id in range(max_episodes_count):
         env.reset()
+        steps = 0
         while not env.is_game_over():
             s = env.state_id()
             aa = env.available_actions()
@@ -206,6 +227,7 @@ def sarsa_on_grid_world(
 
             old_score = env.score()
             env.step(a)
+            steps += 1
             new_score = env.score()
             r = new_score - old_score
 
@@ -229,7 +251,9 @@ def sarsa_on_grid_world(
             pi[s, :] = 0.0
             pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
 
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+        steps_per_episode[ep_id] = steps
+        episode_times[ep_id] = time.time() - start_time
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q))), steps_per_episode, episode_times
 
 
 def q_learning_on_grid_world(
@@ -250,8 +274,12 @@ def q_learning_on_grid_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
+    steps_per_episode = np.zeros(max_episodes_count)
+    episode_times = np.zeros(max_episodes_count)
+    start_time = time.time()
     for ep_id in range(max_episodes_count):
         env.reset()
+        steps = 0
         while not env.is_game_over():
             s = env.state_id()
             aa = env.available_actions()
@@ -264,6 +292,7 @@ def q_learning_on_grid_world(
 
             old_score = env.score()
             env.step(a)
+            steps += 1
             new_score = env.score()
             r = new_score - old_score
 
@@ -278,8 +307,9 @@ def q_learning_on_grid_world(
 
             pi[s, :] = 0.0
             pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
-
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+        steps_per_episode[ep_id] = steps
+        episode_times[ep_id] = time.time() - start_time
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q))), steps_per_episode, episode_times
 
 
 def expected_sarsa_on_grid_world(
@@ -300,8 +330,12 @@ def expected_sarsa_on_grid_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
+    steps_per_episode = np.zeros(max_episodes_count)
+    episode_times = np.zeros(max_episodes_count)
+    start_time = time.time()
     for ep_id in range(max_episodes_count):
         env.reset()
+        steps = 0
         while not env.is_game_over():
             s = env.state_id()
             aa = env.available_actions()
@@ -314,6 +348,7 @@ def expected_sarsa_on_grid_world(
 
             old_score = env.score()
             env.step(a)
+            steps += 1
             new_score = env.score()
             r = new_score - old_score
 
@@ -329,8 +364,9 @@ def expected_sarsa_on_grid_world(
 
             pi[s, :] = 0.0
             pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
-
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+        steps_per_episode[ep_id] = steps
+        episode_times[ep_id] = time.time() - start_time
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q))), steps_per_episode, episode_times
 
 
 def sarsa_on_tic_tac_toe_solo(env: TicTacToe,
@@ -349,8 +385,12 @@ def sarsa_on_tic_tac_toe_solo(env: TicTacToe,
     pi = np.zeros((2, 9))
     Q = np.random.uniform(-1.0, 1.0, (2, 9))
 
+    steps_per_episode = np.zeros(max_episodes_count)
+    episode_times = np.zeros(max_episodes_count)
+    start_time = time.time()
     for ep_id in range(max_episodes_count):
         env.reset()
+        steps = 0
         while not env.is_game_over():
             if env.player == -1:
                 s = 0
@@ -375,6 +415,7 @@ def sarsa_on_tic_tac_toe_solo(env: TicTacToe,
                     new_score = env.player
                 else:
                     new_score = 0
+            steps += 1
             r = new_score - old_score
 
             if env.player == -1:
@@ -401,8 +442,9 @@ def sarsa_on_tic_tac_toe_solo(env: TicTacToe,
 
             # pi[s, :] = 0.0
             pi[s, aa[np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])]] = 1.0
-
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+        steps_per_episode[ep_id] = steps
+        episode_times[ep_id] = time.time() - start_time
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q))), steps_per_episode, episode_times
 
 
 def q_learning_on_tic_tac_toe_solo(
@@ -423,8 +465,12 @@ def q_learning_on_tic_tac_toe_solo(
     pi = np.zeros((2, 9))
     Q = np.random.uniform(-1.0, 1.0, (2, 9))
 
+    steps_per_episode = np.zeros(max_episodes_count)
+    episode_times = np.zeros(max_episodes_count)
+    start_time = time.time()
     for ep_id in range(max_episodes_count):
         env.reset()
+        steps = 0
         while not env.is_game_over():
             if env.player == -1:
                 s = 0
@@ -450,6 +496,7 @@ def q_learning_on_tic_tac_toe_solo(
                     new_score = env.player
                 else:
                     new_score = 0
+            steps += 1
             r = new_score - old_score
 
             if env.player == -1:
@@ -466,8 +513,9 @@ def q_learning_on_tic_tac_toe_solo(
 
             # pi[s, :] = 0.0
             pi[s, aa[np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])]] = 1.0
-
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+        steps_per_episode[ep_id] = steps
+        episode_times[ep_id] = time.time() - start_time
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q))), steps_per_episode, episode_times
 
 
 def expected_sarsa_on_tic_tac_toe_solo(
@@ -488,8 +536,12 @@ def expected_sarsa_on_tic_tac_toe_solo(
     pi = np.zeros((2, 9))
     Q = np.random.uniform(-1.0, 1.0, (2, 9))
 
+    steps_per_episode = np.zeros(max_episodes_count)
+    episode_times = np.zeros(max_episodes_count)
+    start_time = time.time()
     for ep_id in range(max_episodes_count):
         env.reset()
+        steps = 0
         while not env.is_game_over():
             if env.player == -1:
                 s = 0
@@ -515,6 +567,7 @@ def expected_sarsa_on_tic_tac_toe_solo(
                     new_score = env.player
                 else:
                     new_score = 0
+            steps += 1
             r = new_score - old_score
 
             if env.player == -1:
@@ -533,8 +586,9 @@ def expected_sarsa_on_tic_tac_toe_solo(
 
             # pi[s, :] = 0.0
             pi[s, aa[np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])]] = 1.0
-
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+        steps_per_episode[ep_id] = steps
+        episode_times[ep_id] = time.time() - start_time
+    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q))), steps_per_episode, episode_times
 
 
 def sarsa_on_secret_env3(
@@ -788,33 +842,68 @@ def expected_sarsa_on_secret_env3(
     return PolicyAndActionValueFunction(pi=dict(pi), q=dict(Q))
 
 
+def find_five_same_value_in_a_row(csv_file):
+    with open(csv_file, 'r') as file:
+        reader = csv.reader(file)
+        next(reader)
+        values = [int(row[1]) for row in reader]
+
+    for i in range(len(values) - 4):
+        if all(values[i + j] == 3 for j in range(5)):
+            return int(i) + 1
+
+    return -1
+
+
 if __name__ == '__main__':
     line_world = LineWorldEnv(7)
     grid_world = GridWorldEnv(5, 5)
     tictactoe = TicTacToe()
+    current_env = None
+    for env in ["line_world", "grid_world", "tic_tac_toe_solo"]:
+        if env == "line_world":
+            current_env = line_world
+        elif env == "grid_world":
+            current_env = grid_world
+        else:
+            current_env = tictactoe
+        for algo in ["sarsa", "q_learning", "expected_sarsa"]:
+            for seed in [0,1,2,3,4,5,6,7,8,9]:
+                np.random.seed(seed)
+                for gamma in [0.9999, 0.75, 0.5]:
+                    for alpha in [0.01, 0.1]:
+                        for epsilon in [0.1, 0.2, 0.5]:
+                            temp, steps_total, times_total = getattr(sys.modules[__name__], f"{algo}_on_{env}")(current_env, gamma=gamma, alpha=alpha, epsilon=epsilon)
+                            steps_total = [int(x) for x in steps_total]
+                            times_total = [round(x, 4) for x in times_total]
+                            plt.plot(steps_total, c='red')
+                            plt.savefig(f"C:\\Users\\Erwan\\Desktop\\Code\\Deep_Reinforcement_Learning\\save_optimization\\line_world\\{algo}\\seed-{seed}\\img\\steps_gamma-{gamma}_alpha-{alpha}_epsilon-{epsilon}.png")
+                            plt.clf()
+                            plt.plot(times_total, steps_total, c='green')
+                            plt.savefig(f"C:\\Users\\Erwan\\Desktop\\Code\\Deep_Reinforcement_Learning\\save_optimization\\line_world\\{algo}\\seed-{seed}\\img\\timespersteps_gamma-{gamma}_alpha-{alpha}_epsilon-{epsilon}.png")
+                            pd.DataFrame({"time": times_total, "step": steps_total}).to_csv(f"C:\\Users\\Erwan\\Desktop\\Code\\Deep_Reinforcement_Learning\\save_optimization\\line_world\\{algo}\\seed-{seed}\\csv\\gamma-{gamma}_alpha-{alpha}_epsilon-{epsilon}.csv", index=False)
 
-    for gamma in [0.9999, 0.75, 0.5]:
-        for alpha in [0.01, 0.1]:
-            for epsilon in [0.1, 0.2, 0.5]:
-                temp, steps_total, episodes_total = sarsa_on_line_world(line_world, gamma=gamma, alpha=alpha, epsilon=epsilon)
-                plt.plot(steps_total, c='red')
-                plt.show()
-                plt.savefig(f"C:\\Users\\erwan\\Desktop\\ESGI\\S8\\Deep Reinforcement Learning\\Save_opti\\line_world\\sarsa\\gamma-{gamma}_alpha-{alpha}_epsilon-{epsilon}.png")
-                plt.plot(episodes_total, steps_total, c='green')
-                plt.show()
+            list_dir = [x for x in os.listdir(f"C:\\Users\\Erwan\\Desktop\\Code\\Deep_Reinforcement_Learning\\save_optimization\\line_world\\{algo}")]
+            result_for_each_seeds = [[], [], [], [], [], [], [], [], [], []]
+            for index, directory in enumerate(list_dir):
+                csv_dir = [x for x in os.listdir(f"C:\\Users\\Erwan\\Desktop\\Code\\Deep_Reinforcement_Learning\\save_optimization\\line_world\\{algo}\\{directory}\\csv")]
+                result_table = {}
+                for file in csv_dir:
+                    id_found = find_five_same_value_in_a_row(f"C:\\Users\\Erwan\\Desktop\\Code\\Deep_Reinforcement_Learning\\save_optimization\\line_world\\{algo}\\{directory}\\csv\\" + file)
+                    result_table[file] = [id_found]
+                result_for_each_seeds[index] = [y for x in result_table for y in result_table[x]]
 
-    #print(q_learning_on_line_world(line_world))
-    #print(expected_sarsa_on_line_world(line_world))
+            average_result_for_each_seeds = []
+            for col in range(18):
+                sum_of_col = 0
+                for row in range(10):
+                    sum_of_col += result_for_each_seeds[row][col]
+                average_result_for_each_seeds.append(sum_of_col / 10)
+
+            pd.DataFrame(columns=average_result_for_each_seeds).to_csv(f"C:\\Users\\Erwan\\Desktop\\Code\\Deep_Reinforcement_Learning\\save_optimization\\results\\line_world\\{algo}\\results.csv",index=False)
+            print(average_result_for_each_seeds)
+
     """
-    print(sarsa_on_grid_world(grid_world))
-    print(q_learning_on_grid_world(grid_world))
-    print(expected_sarsa_on_grid_world(grid_world))
-
-
-    print(sarsa_on_tic_tac_toe_solo(tictactoe))
-    print(q_learning_on_tic_tac_toe_solo(tictactoe))
-    print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
-
     print(sarsa_on_secret_env3())
     print(q_learning_on_secret_env3())
     print(expected_sarsa_on_secret_env3())
