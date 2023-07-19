@@ -2,12 +2,3 @@
 .idea
 __pycache__
 .vscode
-
-# Unity
-unity/Library
-unity/Temp
-unity/Obj
-unity/Build
-unity/Builds
-unity/Logs
-unity/UserSettings

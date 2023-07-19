@@ -99,10 +99,10 @@ class LineWorldEnv(SingleAgentLineWorldEnv):
         return 0.5
 
     def p(self, s, a, s_p, r):
-        assert s >= 0 and s <= self.cells_count
-        assert s_p >= 0 and s_p <= self.cells_count
-        assert a >= 0 and a <= 1
-        assert r >= 0 and r <= 2
+        assert 0 <= s <= self.cells_count
+        assert 0 <= s_p <= self.cells_count
+        assert 0 <= a <= 1
+        assert 0 <= r <= 2
         if s == 0 or s == self.cells_count - 1:
             return 0.0
         if s + 1 == s_p and a == 1 and r == 1 and s != self.cells_count - 2:

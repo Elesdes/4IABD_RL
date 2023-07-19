@@ -1,115 +1,110 @@
+from typing import Any
+
 import numpy as np
 
 from do_not_touch.result_structures import PolicyAndActionValueFunction
 from do_not_touch.single_agent_env_wrapper import Env2
-from games.tictactoe import TicTacToe
+from envs.tictactoe import TicTacToe
 
 
 def monte_carlo_es_on_tic_tac_toe_solo(
-    num_episodes: int = 10000, epsilon: float = 0.1
+        env: Any = TicTacToe(), num_episodes: int = 10000, gamma: float = 0.1
 ) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
     Launches a Monte Carlo ES (Exploring Starts) in order to find the optimal Policy and its action-value function
     Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     """
-    env = TicTacToe()
-    q = {}
-    visit_counts = {}
+    pi, q, returns = {}, {}, {}
+
     for _ in range(num_episodes):
-        env.reset()
-        # Random initial action for exploring start
-        initial_action = tuple(
-            env.available_actions()[np.random.randint(len(env.available_actions()))]
-        )
-        env.play(initial_action)
-        episode_history = [(tuple(env.board.flatten()), initial_action)]
+        env.reset_random()
+        S, A, R = [], [], []
+
         while not env.is_game_over():
-            state = tuple(env.board.flatten())
-            actions = env.available_actions()
+            s = env.state_id()
+            S.append(s)
+            available_actions = env.available_actions_ids()
 
-            if state not in q:
-                q[state] = {tuple(action): 0 for action in actions}
-                visit_counts[state] = {tuple(action): 0 for action in actions}
+            if s not in pi:
+                pi[s], q[s], returns[s] = {}, {}, {}
+                for a in available_actions:
+                    pi[s][a] = q[s][a] = returns[s][a] = 0 if s in pi else 1.0 / len(available_actions)
 
-            action = (
-                actions[np.random.randint(len(actions))]
-                if np.random.rand() < epsilon
-                else max(visit_counts[state], key=visit_counts[state].get)
-            )
-            env.play(action)
-            episode_history.append((state, action))
+            A.append(np.random.choice(available_actions, 1, False)[0])
+            old_score = env.score()
+            env.act_with_action_id(A[-1])
+            R.append(env.score() - old_score)
+        G = 0
 
-        reward = 1 if env.player == -1 else -1
-        for state, action in episode_history:
-            if action not in visit_counts[state]:
-                visit_counts[state][action] = 0
+        for t in reversed(range(len(S))):
+            G = G * gamma + R[t]
+            if not any(S[t] == s and A[t] == a for s, a in zip(S[:t], A[:t])):
+                q[S[t]][A[t]] = (q[S[t]][A[t]] * returns[S[t]][A[t]] + G) / (returns[S[t]][A[t]] + 1)
+                returns[S[t]][A[t]] += 1
+                pi[S[t]] = list(q[S[t]].keys())[np.argmax(list(q[S[t]].values()))]
 
-            visit_counts[state][action] += 1
-            q[state][action] += (reward - q[state][action]) / visit_counts[state][
-                action
-            ]
-            reward = -reward
-
-    pi = {state: max(q[state], key=q[state].get) for state in q}
-    return PolicyAndActionValueFunction(pi=pi, q=q)
+    return PolicyAndActionValueFunction(pi, q)
 
 
 def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo(
-    num_episodes: int = 10000, epsilon: float = 0.1
+        env: Any = TicTacToe(), num_episodes: int = 10000, gamma: float = 0.1
 ) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
     Launches an On Policy First Visit Monte Carlo Control algorithm in order to find the optimal epsilon-greedy Policy
-    and its action-value function
+    and its Action-Value function (Q(s,a))
     Returns the Optimal epsilon-greedy Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
-    env = TicTacToe()
+    q, c_weights, pi, b_policy = {}, {}, {}, {}
 
-    # Initialize the action-value function Q(s, a) and the policy Pi(s, a) for all states and actions
-    Q = {}
-    N = np.zeros((3, 3, 2, 2))
-    Pi = {}
+    rng = np.random.default_rng()
 
     for _ in range(num_episodes):
-        episode = []
-        state = env.reset()
-        done = False
+        env.reset()
+        S, A, R = [], [], []
 
-        # Generate an episode using the current policy
-        while not done:
-            if state not in Pi:
-                Pi[state] = {action: 0.5 for action in env.available_actions()}
+        while not env.is_game_over():
+            s = env.state_id()
+            S.append(s)
+            if s not in b_policy:
+                available_actions = env.available_actions_ids()
+                nb_of_actions = len(available_actions)
+                proba_s = rng.integers(1, nb_of_actions, nb_of_actions, endpoint=True).astype(float)
+                proba_s /= sum(proba_s)
+                b_policy[s] = {a: proba_s[id_a] for id_a, a in enumerate(available_actions)}
 
-            action = (
-                np.random.choice(env.available_actions())
-                if np.random.rand() < epsilon
-                else max(Pi[state], key=Pi[state].get)
-            )
-            next_state, reward, done = env.step(action)
-            episode.append((state, action, reward))
-            state = next_state
+            available_actions = env.available_actions_ids()
 
-        # Update the action-value function and the policy
-        G = 0
-        for s, a, r in reversed(episode):
-            G = r + G
-            if s not in Q:
-                Q[s] = {action: 0 for action in env.available_actions()}
-            if s not in N:
-                N[s] = {action: 0 for action in env.available_actions()}
+            if s not in q:
+                q[s] = {a: 0.0 for a in available_actions}
+                c_weights[s] = {a: 0.0 for a in available_actions}
 
-            N[s][a] += 1
-            Q[s][a] += (G - Q[s][a]) / N[s][a]
-            Pi[s] = {action: 0 for action in env.available_actions()}
-            Pi[s][a] = 1 - epsilon + epsilon / len(env.available_actions())
+            A.append(np.random.choice(list(b_policy[s].keys()), 1, False, p=list(b_policy[s].values()))[0])
+            old_score = env.score()
+            env.act_with_action_id(A[-1])
+            R.append(env.score() - old_score)
 
-    return PolicyAndActionValueFunction(pi=Pi, q=Q)
+        G, W = 0.0, 1.0
+
+        for t in reversed(range(len(S))):
+            s_t, a_t = S[t], A[t]
+            G = G * gamma + R[t]
+            c_weights[s_t][a_t] += W
+            q[s_t][a_t] += (W / c_weights[s_t][a_t] * (G - q[s_t][a_t]))
+            pi[s_t] = list(q[s_t].keys())[np.argmax(list(q[s_t].values()))]
+
+            if a_t == pi[s_t]:
+                break
+
+            W = W / b_policy[s_t][a_t]
+
+    return PolicyAndActionValueFunction(pi, q)
 
 
 def off_policy_monte_carlo_control_on_tic_tac_toe_solo(
-    num_episodes: int = 10000, epsilon: float = 0.1
+        env: Any = TicTacToe(), num_episodes: int = 10000, gamma: float = 0.1, epsilon: float = 0.1
 ) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
@@ -117,58 +112,40 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo(
     Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
-    env = TicTacToe()
-    num_actions = 9
-    Q = {}
-    Nsa = {}
-    Pi = {}
+    assert (epsilon > 0)
+    pi, q, returns = {}, {}, {}
 
     for _ in range(num_episodes):
-        episode = []
-        state = 0
-        env.reset()
-
-        # Generate episode using behavior policy
+        env.reset_random()
+        S, A, R = [], [], []
         while not env.is_game_over():
-            if state not in Pi:
-                Pi[state] = {action: 1 / num_actions for action in range(num_actions)}
+            s = env.state_id()
+            S.append(s)
+            available_actions = env.available_actions_ids()
+            if s not in pi:
+                pi[s] = {a: 1.0 / len(available_actions) for a in available_actions}
+                q[s] = {a: 0.0 for a in available_actions}
+                returns[s] = {a: 0 for a in available_actions}
 
-            action = np.random.choice(num_actions, p=list(Pi[state].values()))
-            episode.append((state, action))
-            state, _ = env.play((action // 3, action % 3))
+            A.append(np.random.choice(list(pi[s].keys()), 1, False, p=list(pi[s].values()))[0])
+            old_score = env.score()
+            env.act_with_action_id(A[-1])
+            R.append(env.score() - old_score)
 
-        # Calculate returns and update Q-values and target policy
         G = 0
-        W = 1
-        for t in range(len(episode) - 1, -1, -1):
-            state, action = episode[t]
-            reward = env.board.flatten()[state // 3 ** (8 - action)]
-            G = reward + G
-
-            if state not in Nsa:
-                Nsa[state] = {action: 0 for action in range(num_actions)}
-
-            Nsa[state][action] += W
-            alpha = W / Nsa[state][action]
-
-            if state not in Q:
-                Q[state] = {action: 0 for action in range(num_actions)}
-
-            Q[state][action] += alpha * (G - Q[state][action])
-
-            a_star = max(Pi[state], key=Pi[state].get)
-            for a in Pi[state]:
-                Pi[state][a] = (
-                    1 - epsilon + epsilon / num_actions
-                    if a == a_star
-                    else epsilon / num_actions
-                )
-
-            if action != a_star:
-                break
-            W = W / epsilon if action == a_star else 0
-
-    return PolicyAndActionValueFunction(pi=Pi, q=Q)
+        for t in reversed(range(len(S))):
+            G = G * gamma + R[t]
+            s_t, a_t = S[t], A[t]
+            if not any(s_t == s and a_t == a for s, a in zip(S[:t], A[:t])):
+                q[s_t][a_t] = (q[s_t][a_t] * returns[s_t][a_t] + G) / (returns[s_t][a_t] + 1)
+                returns[s_t][a_t] += 1
+                optimal_s_a = list(q[s_t].keys())[np.argmax(list(q[s_t].values()))]
+                available_action_t_counts = len(q[s_t])
+                for a in q[s_t]:
+                    pi[s_t][a] = (1 - epsilon + epsilon / available_action_t_counts) \
+                        if a == optimal_s_a \
+                        else epsilon / available_action_t_counts
+    return PolicyAndActionValueFunction(pi, q)
 
 
 def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
@@ -177,11 +154,11 @@ def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
     Launches a Monte Carlo ES (Exploring Starts) in order to find the optimal Policy and its action-value function
     Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     """
-    env = Env2()
+    return monte_carlo_es_on_tic_tac_toe_solo(env=Env2(), num_episodes=10000, gamma=0.1)
 
 
 def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> (
-    PolicyAndActionValueFunction
+        PolicyAndActionValueFunction
 ):
     """
     Creates a Secret Env2
@@ -189,7 +166,7 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> (
     Returns the Optimal epsilon-greedy Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
-    env = Env2()
+    return on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo(env=Env2(), num_episodes=10000, gamma=0.1)
 
 
 def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunction:
@@ -199,16 +176,22 @@ def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunct
     Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
-    env = Env2()
+    return off_policy_monte_carlo_control_on_tic_tac_toe_solo(env=Env2(), num_episodes=10000, gamma=0.1, epsilon=0.1)
 
 
 def demo():
+    print("Monte Carlo ES on Tic Tac Toe Solo")
     print(monte_carlo_es_on_tic_tac_toe_solo())
+    print("On Policy First Visit Monte Carlo Control on Tic Tac Toe Solo")
     print(on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo())
+    print("Off Policy Monte Carlo Control on Tic Tac Toe Solo")
     print(off_policy_monte_carlo_control_on_tic_tac_toe_solo())
 
+    print("Monte Carlo ES on Secret Env2")
     print(monte_carlo_es_on_secret_env2())
+    print("On Policy First Visit Monte Carlo Control on Secret Env2")
     print(on_policy_first_visit_monte_carlo_control_on_secret_env2())
+    print("Off Policy Monte Carlo Control on Secret Env2")
     print(off_policy_monte_carlo_control_on_secret_env2())
 
 
