@@ -1,25 +1,20 @@
-import math
-
-from do_not_touch.result_structures import PolicyAndActionValueFunction
-from do_not_touch.single_agent_env_wrapper import Env3, Env2
-from games.line_world import SingleAgentLineWorldEnv, LineWorldEnv
-from games.grid_world import SingleAgentGridWorldEnv, GridWorldEnv
-from games.tictactoe import TicTacToe
 # from algorithms.utils import return_policy_into_dict
 import numpy as np
 
 from do_not_touch.result_structures import PolicyAndActionValueFunction
 from do_not_touch.single_agent_env_wrapper import Env3
-from games.grid_world import GridWorldEnv, SingleAgentGridWorldEnv
-from games.line_world import LineWorldEnv, SingleAgentLineWorldEnv
+from envs.grid_world import GridWorldEnv, SingleAgentGridWorldEnv
+from envs.line_world import LineWorldEnv, SingleAgentLineWorldEnv
+from envs.tictactoe import TicTacToe
+from utils import init_state_sarsa
 
 
 def sarsa_on_line_world(
-    env: SingleAgentLineWorldEnv,
-    gamma: float = 0.9999,
-    alpha: float = 0.01,
-    epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+        env: SingleAgentLineWorldEnv,
+        gamma: float = 0.9999,
+        alpha: float = 0.01,
+        epsilon: float = 0.2,
+        max_episodes_count: int = 10000,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
@@ -32,7 +27,7 @@ def sarsa_on_line_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
-    for ep_id in range(max_episodes_count):
+    for _ in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
             s = env.state_id()
@@ -50,10 +45,7 @@ def sarsa_on_line_world(
             r = new_score - old_score
 
             s_p = env.state_id()
-            aa_p = env.available_actions()
-
-            # Watch out, you need to take a specific a' AND it needs to not be "game over"-like
-            if aa_p:
+            if aa_p := env.available_actions():
                 if np.random.random() < epsilon:
                     a_p = np.random.choice(aa_p)
                 else:
@@ -73,11 +65,11 @@ def sarsa_on_line_world(
 
 
 def q_learning_on_line_world(
-    env: SingleAgentLineWorldEnv,
-    gamma: float = 0.9999,
-    alpha: float = 0.01,
-    epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+        env: SingleAgentLineWorldEnv,
+        gamma: float = 0.9999,
+        alpha: float = 0.01,
+        epsilon: float = 0.2,
+        max_episodes_count: int = 10000,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
@@ -90,7 +82,7 @@ def q_learning_on_line_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
-    for ep_id in range(max_episodes_count):
+    for _ in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
             s = env.state_id()
@@ -123,11 +115,11 @@ def q_learning_on_line_world(
 
 
 def expected_sarsa_on_line_world(
-    env: SingleAgentLineWorldEnv,
-    gamma: float = 0.9999,
-    alpha: float = 0.01,
-    epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+        env: SingleAgentLineWorldEnv,
+        gamma: float = 0.9999,
+        alpha: float = 0.01,
+        epsilon: float = 0.2,
+        max_episodes_count: int = 10000,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
@@ -140,7 +132,7 @@ def expected_sarsa_on_line_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
-    for ep_id in range(max_episodes_count):
+    for _ in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
             s = env.state_id()
@@ -174,11 +166,11 @@ def expected_sarsa_on_line_world(
 
 
 def sarsa_on_grid_world(
-    env: SingleAgentGridWorldEnv,
-    gamma: float = 0.9999,
-    alpha: float = 0.01,
-    epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+        env: SingleAgentGridWorldEnv,
+        gamma: float = 0.9999,
+        alpha: float = 0.01,
+        epsilon: float = 0.2,
+        max_episodes_count: int = 10000,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a Grid World of 5x5 cells (upper rightmost and lower rightmost are terminal, with -1 and 1 reward respectively)
@@ -191,7 +183,7 @@ def sarsa_on_grid_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
-    for ep_id in range(max_episodes_count):
+    for _ in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
             s = env.state_id()
@@ -209,10 +201,7 @@ def sarsa_on_grid_world(
             r = new_score - old_score
 
             s_p = env.state_id()
-            aa_p = env.available_actions()
-
-            # Watch out, you need to take a specific a' AND it needs to not be "game over"-like
-            if aa_p:
+            if aa_p := env.available_actions():
                 if np.random.random() < epsilon:
                     a_p = np.random.choice(aa_p)
                 else:
@@ -232,11 +221,11 @@ def sarsa_on_grid_world(
 
 
 def q_learning_on_grid_world(
-    env: SingleAgentGridWorldEnv,
-    gamma: float = 0.9999,
-    alpha: float = 0.01,
-    epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+        env: SingleAgentGridWorldEnv,
+        gamma: float = 0.9999,
+        alpha: float = 0.01,
+        epsilon: float = 0.2,
+        max_episodes_count: int = 10000,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a Grid World of 5x5 cells (upper rightmost and lower rightmost are terminal, with -1 and 1 reward respectively)
@@ -249,7 +238,7 @@ def q_learning_on_grid_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
-    for ep_id in range(max_episodes_count):
+    for _ in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
             s = env.state_id()
@@ -282,11 +271,11 @@ def q_learning_on_grid_world(
 
 
 def expected_sarsa_on_grid_world(
-    env: SingleAgentGridWorldEnv,
-    gamma: float = 0.9999,
-    alpha: float = 0.01,
-    epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+        env: SingleAgentGridWorldEnv,
+        gamma: float = 0.9999,
+        alpha: float = 0.01,
+        epsilon: float = 0.2,
+        max_episodes_count: int = 10000,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a Grid World of 5x5 cells (upper rightmost and lower rightmost are terminal, with -1 and 1 reward respectively)
@@ -299,7 +288,7 @@ def expected_sarsa_on_grid_world(
     pi = np.zeros((env.state_space(), env.action_space()))
     Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
 
-    for ep_id in range(max_episodes_count):
+    for _ in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
             s = env.state_id()
@@ -345,59 +334,40 @@ def sarsa_on_tic_tac_toe_solo(env: TicTacToe,
     """
     assert epsilon > 0
     assert alpha > 0
-    pi = np.zeros((2, 9))
-    Q = np.random.uniform(-1.0, 1.0, (2, 9))
+    pi = np.zeros(9)
+    Q = np.random.uniform(-1.0, 1.0, 9)
 
-    for ep_id in range(max_episodes_count):
+    for _ in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
-            if env.player == -1:
-                s = 0
-            else:
-                s = env.player
-            aa = env.available_actions()
+            s = env.state_id()
+            aa = env.available_actions_ids()
 
             if np.random.random() < epsilon:
-                a = aa[np.random.randint(aa.shape[0], size=1), :][0]
+                a = np.random.choice(aa)
             else:
-                best_a_idx = np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])
-                a = (np.array(((0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2))))[best_a_idx]
+                best_a_idx = np.argmax(Q[aa])
+                a = aa[best_a_idx]
 
-            if env.is_game_over():
-                old_score = -env.player
-                env.play(a)
-                new_score = -env.player
-            else:
-                old_score = 0
-                env.play(a)
-                if env.is_game_over():
-                    new_score = env.player
-                else:
-                    new_score = 0
+            old_score = env.score()
+            env.act_with_action_id(a)
+            new_score = 0 if env.is_game_over() else env.score()
             r = new_score - old_score
 
-            if env.player == -1:
-                s_p = 0
-            else:
-                s_p = env.player
-            aa_p = env.available_actions()
+            aa_p = env.available_actions_ids()
 
-            # Watch out, you need to take a specific a' AND it needs to not be "game over"-like
             if len(aa_p) > 0:
                 if np.random.random() < epsilon:
-                    a_p = aa_p[np.random.randint(aa_p.shape[0], size=1), :][0]
+                    a_p = np.random.choice(aa_p)
                 else:
-                    best_a_p_idx = np.argmax(Q[s_p][[case[0] * 3 + case[1] for case in aa_p]])
-                    a_p = (np.array(((0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2))))[best_a_p_idx]
+                    best_a_p_idx = np.argmax(Q[aa_p])
+                    a_p = aa_p[best_a_p_idx]
 
-            if env.is_game_over():
-                #Q[s_p, :] = 0.0
-                Q[s, (a[0] * 3 + a[1])] += alpha * (r - Q[s, (a[0] * 3 + a[1])])
+                Q[a] += alpha * (r + gamma * Q[a_p] - Q[a])
             else:
-                Q[s, (a[0] * 3 + a[1])] += alpha * (r + gamma * (Q[s_p, (a_p[0] * 3 + a_p[1])]) - Q[s, (a[0] * 3 + a[1])])
+                Q[a] += alpha * (r - Q[a])
 
-            #pi[s, :] = 0.0
-            pi[s, aa[np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])]] = 1.0
+            pi[aa[np.argmax(Q[aa])]] = 1.0
 
     return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
 
@@ -417,55 +387,36 @@ def q_learning_on_tic_tac_toe_solo(
     """
     assert epsilon > 0
     assert alpha > 0
-    pi = np.zeros((2, 9))
-    Q = np.random.uniform(-1.0, 1.0, (2, 9))
+    pi = np.zeros(9)
+    Q = np.random.uniform(-1.0, 1.0, 9)
 
-    for ep_id in range(max_episodes_count):
+    for _ in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
-            if env.player == -1:
-                s = 0
-            else:
-                s = env.player
-            aa = env.available_actions()
+            s = env.state_id()
+            aa = env.available_actions_ids()
 
             if np.random.random() < epsilon:
-                # a = np.random.choice(aa)
-                a = aa[np.random.randint(aa.shape[0], size=1), :][0]
+                a = np.random.choice(aa)
             else:
-                #print(np.argmax(Q[s][aa]), " ", Q[s] , " ", s, " ", aa, " ", [case[0] * 3 + case[1] for case in aa], " ",env.is_game_over(), "\n------")
-                best_a_idx = np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])
-                a = (np.array(((0,0),(0,1),(0,2),(1,0),(1,1),(1,2),(2,0),(2,1),(2,2))))[best_a_idx]
-            if env.is_game_over():
-                old_score = -env.player
-                env.play(a)
-                new_score = -env.player
-            else:
-                old_score = 0
-                env.play(a)
-                if env.is_game_over():
-                    new_score = env.player
-                else:
-                    new_score = 0
+                best_a_idx = np.argmax(Q[aa])
+                a = aa[best_a_idx]
+
+            old_score = env.score()
+            env.act_with_action_id(a)
+            new_score = 0 if env.is_game_over() else env.score()
             r = new_score - old_score
 
-            if env.player == -1:
-                s_p = 0
-            else:
-                s_p = env.player
-            aa_p = env.available_actions()
+            aa_p = env.available_actions_ids()
 
             if env.is_game_over() or len(aa_p) == 0:
-                #Q[s_p, :] = 0.0
-                Q[s, (a[0] * 3 + a[1])] += alpha * (r - Q[s, (a[0] * 3 + a[1])])
+                Q[a] += alpha * (r - Q[a])
             else:
-                Q[s, (a[0] * 3 + a[1])] += alpha * (r + gamma * np.max(Q[s_p][aa_p]) - Q[s, (a[0] * 3 + a[1])])
+                Q[a] += alpha * (r + gamma * np.max(Q[aa_p]) - Q[a])
 
-            #pi[s, :] = 0.0
-            pi[s, aa[np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])]] = 1.0
+            pi[aa[np.argmax(Q[aa])]] = 1.0
 
     return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
-
 
 def expected_sarsa_on_tic_tac_toe_solo(
     env: TicTacToe,
@@ -482,63 +433,44 @@ def expected_sarsa_on_tic_tac_toe_solo(
     """
     assert epsilon > 0
     assert alpha > 0
-    pi = np.zeros((2, 9))
-    Q = np.random.uniform(-1.0, 1.0, (2, 9))
+    pi = np.zeros(9)
+    Q = np.random.uniform(-1.0, 1.0, 9)
 
-    for ep_id in range(max_episodes_count):
+    for _ in range(max_episodes_count):
         env.reset()
         while not env.is_game_over():
-            if env.player == -1:
-                s = 0
-            else:
-                s = env.player
-            aa = env.available_actions()
+            s = env.state_id()
+            aa = env.available_actions_ids()
 
             if np.random.random() < epsilon:
-                # a = np.random.choice(aa)
-                a = aa[np.random.randint(aa.shape[0], size=1), :][0]
+                a = np.random.choice(aa)
             else:
-                # print(np.argmax(Q[s][aa]), " ", Q[s] , " ", s, " ", aa, " ", [case[0] * 3 + case[1] for case in aa], " ",env.is_game_over(), "\n------")
-                best_a_idx = np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])
-                a = (np.array(((0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2))))[best_a_idx]
-            if env.is_game_over():
-                old_score = -env.player
-                env.play(a)
-                new_score = -env.player
-            else:
-                old_score = 0
-                env.play(a)
-                if env.is_game_over():
-                    new_score = env.player
-                else:
-                    new_score = 0
+                best_a_idx = np.argmax(Q[aa])
+                a = aa[best_a_idx]
+
+            old_score = env.score()
+            env.act_with_action_id(a)
+            new_score = 0 if env.is_game_over() else env.score()
             r = new_score - old_score
 
-            if env.player == -1:
-                s_p = 0
-            else:
-                s_p = env.player
-            aa_p = env.available_actions()
+            aa_p = env.available_actions_ids()
 
             if env.is_game_over() or len(aa_p) == 0:
-                #Q[s_p, :] = 0.0
-                Q[s, (a[0] * 3 + a[1])] += alpha * (r - Q[s, (a[0] * 3 + a[1])])
+                Q[a] += alpha * (r - Q[a])
             else:
-                expected_value = np.dot(Q[s_p][[case[0] * 3 + case[1] for case in aa_p]], pi[s_p][[case[0] * 3 + case[1] for case in aa_p]])
-                Q[s, (a[0] * 3 + a[1])] += alpha * (r + gamma * expected_value - Q[s, (a[0] * 3 + a[1])])
+                expected_value = sum(Q[a_prime] * pi[a_prime] for a_prime in aa_p)
+                Q[a] += alpha * (r + gamma * expected_value - Q[a])
 
-
-            #pi[s, :] = 0.0
-            pi[s, aa[np.argmax(Q[s][[case[0] * 3 + case[1] for case in aa]])]] = 1.0
+            pi[aa[np.argmax(Q[aa])]] = 1.0
 
     return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
 
 
 def sarsa_on_secret_env3(
-    gamma: float = 0.9999,
-    alpha: float = 0.01,
-    epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+        gamma: float = 0.9999,
+        alpha: float = 0.01,
+        epsilon: float = 0.2,
+        max_episodes_count: int = 10000,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a Secret Env3
@@ -620,10 +552,10 @@ def sarsa_on_secret_env3(
 
 
 def q_learning_on_secret_env3(
-    gamma: float = 0.9999,
-    alpha: float = 0.01,
-    epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+        gamma: float = 0.9999,
+        alpha: float = 0.01,
+        epsilon: float = 0.2,
+        max_episodes_count: int = 10000,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a Secret Env3
@@ -637,6 +569,7 @@ def q_learning_on_secret_env3(
 
     Q = {}
     pi = {}
+
     def choose_action(state, available_actions):
         if np.random.random() < epsilon:
             action = np.random.choice(available_actions)
@@ -695,16 +628,17 @@ def q_learning_on_secret_env3(
                     max_a = enum_a
             # pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
             pi[s][aa[max_a]] = 1.0
-            #pi[s, :] = 0.0
-            #pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
+            # pi[s, :] = 0.0
+            # pi[s, aa[np.argmax(Q[s][aa])]] = 1.0
 
     return PolicyAndActionValueFunction(pi=dict(pi), q=dict(Q))
 
+
 def expected_sarsa_on_secret_env3(
-    gamma: float = 0.9999,
-    alpha: float = 0.01,
-    epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+        gamma: float = 0.9999,
+        alpha: float = 0.01,
+        epsilon: float = 0.2,
+        max_episodes_count: int = 10000,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a Secret Env3
@@ -797,11 +731,15 @@ def demo():
     print(expected_sarsa_on_grid_world(grid_world))
     """
 
-    # print(sarsa_on_tic_tac_toe_solo(tictactoe))
-    # print(q_learning_on_tic_tac_toe_solo(tictactoe))
+    print(sarsa_on_tic_tac_toe_solo(tictactoe))
+    print(q_learning_on_tic_tac_toe_solo(tictactoe))
     print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
 
     # print(sarsa_on_secret_env3())
     # print(q_learning_on_secret_env3())
     # print(expected_sarsa_on_secret_env3())
     print("End")
+
+
+if __name__ == "__main__":
+    demo()

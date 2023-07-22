@@ -112,7 +112,7 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo(
     Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
-    assert (epsilon > 0)
+    assert epsilon > 0
     pi, q, returns = {}, {}, {}
 
     for _ in range(num_episodes):

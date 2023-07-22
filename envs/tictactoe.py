@@ -13,7 +13,7 @@ class TicTacToe(SingleAgentEnv):
         self.current_player = 1
 
     def is_game_over(self):
-        return self.check_winner() or self.is_board_full()
+        return self.check_winner() or np.all(self.board != 0)
 
     def state_id(self):
         return str(self.board)
@@ -26,13 +26,13 @@ class TicTacToe(SingleAgentEnv):
         self.current_player = -self.current_player
 
     def score(self):
-        winner = self.check_winner()
-        if winner == 1:
-            return 1
-        elif winner == -1:
-            return -1
-        else:
-            return 0
+        match(self.check_winner()):
+            case 1:
+                return 1
+            case -1:
+                return -1
+            case _:
+                return 0
 
     def check_winner(self):
         winning_moves = [
@@ -52,6 +52,3 @@ class TicTacToe(SingleAgentEnv):
             ),
             None,
         )
-
-    def is_board_full(self):
-        return np.all(self.board != 0)
