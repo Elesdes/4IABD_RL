@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 
 from do_not_touch.contracts import SingleAgentEnv
@@ -10,7 +12,10 @@ class TicTacToe(SingleAgentEnv):
 
     def reset_random(self):
         self.board = np.zeros(9, dtype=int)
-        self.current_player = 1
+        if random.randint(0,1) == 0:
+            self.current_player = 1
+        else:
+            self.current_player = -1
 
     def is_game_over(self):
         return self.check_winner() or np.all(self.board != 0)
@@ -26,13 +31,12 @@ class TicTacToe(SingleAgentEnv):
         self.current_player = -self.current_player
 
     def score(self):
-        match(self.check_winner()):
-            case 1:
-                return 1
-            case -1:
-                return -1
-            case _:
-                return 0
+        if self.check_winner() == 1:
+            return 1
+        elif self.check_winner() == -1:
+            return -1
+        else:
+            return 0
 
     def check_winner(self):
         winning_moves = [

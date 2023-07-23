@@ -1,12 +1,12 @@
 # from algorithms.utils import return_policy_into_dict
 import numpy as np
-
+import random
+import itertools
 from do_not_touch.result_structures import PolicyAndActionValueFunction
 from do_not_touch.single_agent_env_wrapper import Env3
 from envs.grid_world import GridWorldEnv, SingleAgentGridWorldEnv
 from envs.line_world import LineWorldEnv, SingleAgentLineWorldEnv
 from envs.tictactoe import TicTacToe
-from utils import init_state_sarsa
 
 
 def sarsa_on_line_world(
@@ -334,42 +334,70 @@ def sarsa_on_tic_tac_toe_solo(env: TicTacToe,
     """
     assert epsilon > 0
     assert alpha > 0
-    pi = np.zeros(9)
-    Q = np.random.uniform(-1.0, 1.0, 9)
-
+    pi = {}
+    Q = {}
+    possibilities = list(itertools.product([-1, 0, 1], repeat=9))
+    dict_act = {i: random.uniform(-1, 1) for i in range(9)}
+    dict_act_zeros = {i: 0 for i in range(9)}
+    for i in possibilities:
+        Q[i] = dict_act.copy()
+        pi[i] = dict_act_zeros.copy()
     for _ in range(max_episodes_count):
-        env.reset()
+        env.reset_random()
         while not env.is_game_over():
-            s = env.state_id()
+            s = [int(x) for x in env.state_id().replace('[', '').replace(']', '').strip().replace('  ', ' ').split(' ')]
             aa = env.available_actions_ids()
-
             if np.random.random() < epsilon:
                 a = np.random.choice(aa)
             else:
-                best_a_idx = np.argmax(Q[aa])
-                a = aa[best_a_idx]
+                take_Q = Q[tuple(s)]
+                best_a_idx = -1
+                temp_value = -1
+                for x in take_Q.keys():
+                    if Q[tuple(s)][x] > temp_value and x in aa:
+                        temp_value = Q[tuple(s)][x]
+                        best_a_idx = x
+                a = best_a_idx
 
             old_score = env.score()
             env.act_with_action_id(a)
-            new_score = 0 if env.is_game_over() else env.score()
+            new_score = env.score()
             r = new_score - old_score
-
-            aa_p = env.available_actions_ids()
-
-            if len(aa_p) > 0:
+            s_p = [int(x) for x in
+                   env.state_id().replace('[', '').replace(']', '').strip().replace('  ', ' ').split(' ')]
+            if aa_p := env.available_actions_ids():
                 if np.random.random() < epsilon:
                     a_p = np.random.choice(aa_p)
                 else:
-                    best_a_p_idx = np.argmax(Q[aa_p])
-                    a_p = aa_p[best_a_p_idx]
+                    take_Q = Q[tuple(s_p)]
+                    best_a_p_idx = -1
+                    temp_value = -1
+                    for x in take_Q.keys():
+                        if Q[tuple(s_p)][x] > temp_value and x in aa_p:
+                            temp_value = Q[tuple(s_p)][x]
+                            best_a_p_idx = x
+                    a_p = best_a_p_idx
 
-                Q[a] += alpha * (r + gamma * Q[a_p] - Q[a])
+            if env.is_game_over():
+                for k in Q[tuple(s_p)]:
+                    Q[tuple(s_p)][k] = 0.0
+                Q[tuple(s)][a] += alpha * (r - Q[tuple(s)][a])
             else:
-                Q[a] += alpha * (r - Q[a])
+                Q[tuple(s)][a] += alpha * (r + gamma * (Q[tuple(s_p)][a_p]) - Q[tuple(s)][a])
 
-            pi[aa[np.argmax(Q[aa])]] = 1.0
+            for k in pi[tuple(s)]:
+                pi[tuple(s)][k] = 0.0
+            take_Q = Q[tuple(s)]
+            best_idx = -1
+            temp_value = -1
+            for x in take_Q.keys():
+                if Q[tuple(s)][x] > temp_value and x in aa:
+                    temp_value = Q[tuple(s)][x]
+                    best_idx = x
+            pi[tuple(s)][best_idx] = 1.0
 
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+    return PolicyAndActionValueFunction(pi={i: value for i, value in enumerate(pi.values())},
+                                        q={i: value for i, value in enumerate(Q.values())})
 
 
 def q_learning_on_tic_tac_toe_solo(
@@ -387,36 +415,68 @@ def q_learning_on_tic_tac_toe_solo(
     """
     assert epsilon > 0
     assert alpha > 0
-    pi = np.zeros(9)
-    Q = np.random.uniform(-1.0, 1.0, 9)
+    pi = {}
+    Q = {}
+    possibilities = list(itertools.product([-1, 0, 1], repeat=9))
+    dict_act = {i: random.uniform(-1, 1) for i in range(9)}
+    dict_act_zeros = {i: 0 for i in range(9)}
+    for i in possibilities:
+        Q[i] = dict_act.copy()
+        pi[i] = dict_act_zeros.copy()
 
     for _ in range(max_episodes_count):
-        env.reset()
+        env.reset_random()
         while not env.is_game_over():
-            s = env.state_id()
+            s = [int(x) for x in env.state_id().replace('[', '').replace(']', '').strip().replace('  ', ' ').split(' ')]
             aa = env.available_actions_ids()
 
             if np.random.random() < epsilon:
                 a = np.random.choice(aa)
             else:
-                best_a_idx = np.argmax(Q[aa])
-                a = aa[best_a_idx]
+                take_Q = Q[tuple(s)]
+                best_a_idx = -1
+                temp_value = -1
+                for x in take_Q.keys():
+                    if Q[tuple(s)][x] > temp_value and x in aa:
+                        temp_value = Q[tuple(s)][x]
+                        best_a_idx = x
+                a = best_a_idx
 
             old_score = env.score()
             env.act_with_action_id(a)
-            new_score = 0 if env.is_game_over() else env.score()
+            new_score = env.score()
             r = new_score - old_score
 
+            s_p = [int(x) for x in
+                   env.state_id().replace('[', '').replace(']', '').strip().replace('  ', ' ').split(' ')]
             aa_p = env.available_actions_ids()
 
-            if env.is_game_over() or len(aa_p) == 0:
-                Q[a] += alpha * (r - Q[a])
+            if env.is_game_over():
+                for k in Q[tuple(s_p)]:
+                    Q[tuple(s_p)][k] = 0.0
+
+                Q[tuple(s)][a] += alpha * (r - Q[tuple(s)][a])
             else:
-                Q[a] += alpha * (r + gamma * np.max(Q[aa_p]) - Q[a])
+                max_value = -1
+                for key, value in Q[tuple(s_p)].items():
+                    if value > max_value and key in aa_p:
+                        max_value = value
+                Q[tuple(s)][a] += alpha * (r + gamma * max_value - Q[tuple(s)][a])
 
-            pi[aa[np.argmax(Q[aa])]] = 1.0
+            for k in pi[tuple(s)]:
+                pi[tuple(s)][k] = 0.0
 
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+            take_Q = Q[tuple(s)]
+            best_idx = -1
+            temp_value = -1
+            for x in take_Q.keys():
+                if Q[tuple(s)][x] > temp_value and x in aa:
+                    temp_value = Q[tuple(s)][x]
+                    best_idx = x
+            pi[tuple(s)][best_idx] = 1.0
+    return PolicyAndActionValueFunction(pi={i: value for i, value in enumerate(pi.values())},
+                                        q={i: value for i, value in enumerate(Q.values())})
+
 
 def expected_sarsa_on_tic_tac_toe_solo(
     env: TicTacToe,
@@ -431,39 +491,78 @@ def expected_sarsa_on_tic_tac_toe_solo(
     Returns the optimal epsilon-greedy Policy and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
+    # Needs to do the np.dot manually only for this case
+    def matmul(A, B):
+        # Vérifier que les dimensions des matrices sont compatibles
+        assert len(A) == len(B)
+        list1 = list(A.values())
+        list2 = list(B.values())
+        # Effectuer la multiplication matricielle
+        result = np.dot(list1, list2)
+        return result
+
+
     assert epsilon > 0
     assert alpha > 0
-    pi = np.zeros(9)
-    Q = np.random.uniform(-1.0, 1.0, 9)
+    pi = {}
+    Q = {}
+    possibilities = list(itertools.product([-1, 0, 1], repeat=9))
+    dict_act = {i: random.uniform(-1, 1) for i in range(9)}
+    dict_act_zeros = {i: 0 for i in range(9)}
+    for i in possibilities:
+        Q[i] = dict_act.copy()
+        pi[i] = dict_act_zeros.copy()
 
     for _ in range(max_episodes_count):
-        env.reset()
+        env.reset_random()
         while not env.is_game_over():
-            s = env.state_id()
+            s = [int(x) for x in env.state_id().replace('[', '').replace(']', '').strip().replace('  ', ' ').split(' ')]
             aa = env.available_actions_ids()
 
             if np.random.random() < epsilon:
                 a = np.random.choice(aa)
             else:
-                best_a_idx = np.argmax(Q[aa])
-                a = aa[best_a_idx]
+                take_Q = Q[tuple(s)]
+                best_a_idx = -1
+                temp_value = -1
+                for x in take_Q.keys():
+                    if Q[tuple(s)][x] > temp_value and x in aa:
+                        temp_value = Q[tuple(s)][x]
+                        best_a_idx = x
+                a = best_a_idx
 
             old_score = env.score()
             env.act_with_action_id(a)
-            new_score = 0 if env.is_game_over() else env.score()
+            new_score = env.score()
             r = new_score - old_score
 
+            s_p = [int(x) for x in
+                   env.state_id().replace('[', '').replace(']', '').strip().replace('  ', ' ').split(' ')]
             aa_p = env.available_actions_ids()
 
-            if env.is_game_over() or len(aa_p) == 0:
-                Q[a] += alpha * (r - Q[a])
+            if env.is_game_over():
+                for k in Q[tuple(s_p)]:
+                    Q[tuple(s_p)][k] = 0.0
+                Q[tuple(s)][a] += alpha * (r - Q[tuple(s)][a])
             else:
-                expected_value = sum(Q[a_prime] * pi[a_prime] for a_prime in aa_p)
-                Q[a] += alpha * (r + gamma * expected_value - Q[a])
+                take_Q = {k: v for k, v in Q[tuple(s_p)].copy().items() if k in aa_p}
+                take_pi = {k: v for k, v in pi[tuple(s_p)].copy().items() if k in aa_p}
+                expected_value = matmul(take_Q, take_pi)
+                Q[tuple(s)][a] += alpha * (r + gamma * expected_value - Q[tuple(s)][a])
 
-            pi[aa[np.argmax(Q[aa])]] = 1.0
+            for k in pi[tuple(s)]:
+                pi[tuple(s)][k] = 0.0
+            take_Q = Q[tuple(s)]
+            best_idx = -1
+            temp_value = -1
+            for x in take_Q.keys():
+                if Q[tuple(s)][x] > temp_value and x in aa:
+                    temp_value = Q[tuple(s)][x]
+                    best_idx = x
+            pi[tuple(s)][best_idx] = 1.0
 
-    return PolicyAndActionValueFunction(pi=dict(enumerate(pi)), q=dict(enumerate(Q)))
+    return PolicyAndActionValueFunction(pi={i: value for i, value in enumerate(pi.values())},
+                                        q={i: value for i, value in enumerate(Q.values())})
 
 
 def sarsa_on_secret_env3(
@@ -716,6 +815,86 @@ def expected_sarsa_on_secret_env3(
             pi[s][aa[max_a]] = 1.0
     return PolicyAndActionValueFunction(pi=dict(pi), q=dict(Q))
 
+def test(
+        env: TicTacToe,
+        gamma: float = 0.9999,
+        alpha: float = 0.1,
+        epsilon: float = 0.2,
+        max_episodes_count: int = 100000,
+) -> PolicyAndActionValueFunction:
+    assert epsilon > 0
+    assert alpha > 0
+    #pi = np.zeros((env.state_space(), env.action_space()))
+    #Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
+    pi = {}
+    Q = {}
+    possibilities = list(itertools.product([-1, 0, 1], repeat=9))
+    dict_act = {i: random.uniform(-1, 1) for i in range(9)}
+    dict_act_zeros = {i: 0 for i in range(9)}
+    for i in possibilities:
+        Q[i] = dict_act.copy()
+        pi[i] = dict_act_zeros.copy()
+    #Q = np.array([list(Q[key].values()) for key in Q.keys()])
+    #pi = np.array([list(pi[key].values()) for key in pi.keys()])
+    for _ in range(max_episodes_count):
+        env.reset_random()
+        while not env.is_game_over():
+            s = [int(x) for x in env.state_id().replace('[', '').replace(']', '').strip().replace('  ', ' ').split(' ')]
+            aa = env.available_actions_ids()
+            if np.random.random() < epsilon:
+                a = np.random.choice(aa)
+            else:
+                take_Q = Q[tuple(s)]
+                best_a_idx = -1
+                temp_value = -1
+                for x in take_Q.keys():
+                    if Q[tuple(s)][x] > temp_value and x in aa:
+                        temp_value = Q[tuple(s)][x]
+                        best_a_idx = x
+                #best_a_idx = np.argmax(Q[s][aa])
+                a = best_a_idx
+
+            old_score = env.score()
+            env.act_with_action_id(a)
+            new_score = env.score()
+            r = new_score - old_score
+            s_p = [int(x) for x in env.state_id().replace('[', '').replace(']', '').strip().replace('  ', ' ').split(' ')]
+            if aa_p := env.available_actions_ids():
+                if np.random.random() < epsilon:
+                    a_p = np.random.choice(aa_p)
+                else:
+                    take_Q = Q[tuple(s_p)]
+                    best_a_p_idx = -1
+                    temp_value = -1
+                    for x in take_Q.keys():
+                        if Q[tuple(s_p)][x] > temp_value and x in aa_p:
+                            temp_value = Q[tuple(s_p)][x]
+                            best_a_p_idx = x
+                    #best_a_p_idx = np.argmax(Q[s_p][aa_p])
+                    a_p = best_a_p_idx
+
+            if env.is_game_over():
+                for k in Q[tuple(s_p)]:
+                    Q[tuple(s_p)][k] = 0.0
+                #Q[tuple(s_p)][:] = 0.0
+                Q[tuple(s)][a] += alpha * (r - Q[tuple(s)][a])
+            else:
+                Q[tuple(s)][a] += alpha * (r + gamma * (Q[tuple(s_p)][a_p]) - Q[tuple(s)][a])
+
+            for k in pi[tuple(s)]:
+                pi[tuple(s)][k] = 0.0
+            #pi[tuple(s)][:] = 0.0
+            take_Q = Q[tuple(s)]
+            best_idx = -1
+            temp_value = -1
+            for x in take_Q.keys():
+                if Q[tuple(s)][x] > temp_value and x in aa:
+                    temp_value = Q[tuple(s)][x]
+                    best_idx = x
+            pi[tuple(s)][best_idx] = 1.0
+
+    return PolicyAndActionValueFunction(pi={i: value for i, value in enumerate(pi.values())}, q={i: value for i, value in enumerate(Q.values())})
+
 
 def demo():
     line_world = LineWorldEnv(7)
@@ -731,13 +910,27 @@ def demo():
     print(expected_sarsa_on_grid_world(grid_world))
     """
 
-    print(sarsa_on_tic_tac_toe_solo(tictactoe))
-    print(q_learning_on_tic_tac_toe_solo(tictactoe))
+    #print(sarsa_on_tic_tac_toe_solo(tictactoe))
+    #print(q_learning_on_tic_tac_toe_solo(tictactoe))
     print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
 
     # print(sarsa_on_secret_env3())
     # print(q_learning_on_secret_env3())
     # print(expected_sarsa_on_secret_env3())
+    rule = expected_sarsa_on_tic_tac_toe_solo(tictactoe)
+    possibilities = list(itertools.product([-1, 0, 1], repeat=9))
+    #print(test(tictactoe))
+
+    dict_tictactoe = {}
+    for possibilitie, key in zip(possibilities, rule.pi.keys()):
+        dict_tictactoe[possibilitie] = key
+    tictactoe.reset_random()
+    while not tictactoe.is_game_over():
+        print(list(tictactoe.board))
+        print(dict_tictactoe[tuple(list(tictactoe.board))])
+        print(rule.pi[dict_tictactoe[tuple(list(tictactoe.board))]])
+        choice = int(input("Choix: "))
+        tictactoe.act_with_action_id(choice)
     print("End")
 
 
