@@ -145,17 +145,12 @@ def play_game():
                 clicked_col = int(mouseX // 200)
                 if env.board[clicked_row*3 + clicked_col] == 0:
                     env.act_with_action_id((clicked_row*3 + clicked_col))
-                    # if env.is_game_over():
-                    #     restart(env)
-                    # draw_figures(env)
 
         screen.fill(LIGHT_BLUE)
         if not env.is_game_over():
             draw_figures(env)
             draw_lines()
 
-            # draw_agent(env.state_id())
-            # draw_move_count(move_count)
         else:
             draw_game_over(env.current_player)
             bouble_button("exit", "rejouer")
@@ -213,23 +208,19 @@ def play(env, policy):
             draw_lines()
 
         else:
+            time.sleep(0.5)
+            window.fill(LIGHT_BLUE)
             draw_game_over(env.current_player)
             bouble_button("exit", "rejouer")
             for event in pygame.event.get():
-                print("okok1")
-                print(event.type)
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    print("okok2")
                     mouse_pos = pygame.mouse.get_pos()
                     if WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2 < mouse_pos[0] < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2:
-                        print("okok3")
                         if WINDOW_HEIGHT / 2 - BUTTON_HEIGHT< mouse_pos[1]< WINDOW_HEIGHT / 2:
-                            print("okok4")
                             running = False
                         elif WINDOW_HEIGHT / 2 + BUTTON_HEIGHT < mouse_pos[1] < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2:
-                            print("okok5")
                             play(env, policy)
         time.sleep(0.5)
         pygame.display.flip()

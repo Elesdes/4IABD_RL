@@ -325,7 +325,7 @@ def sarsa_on_tic_tac_toe_solo(env: TicTacToe,
                               gamma: float = 0.9999,
                               alpha: float = 0.01,
                               epsilon: float = 0.2,
-                              max_episodes_count: int = 10000) -> PolicyAndActionValueFunction:
+                              max_episodes_count: int = 25206) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
     Launches a SARSA Algorithm in order to find the optimal epsilon-greedy Policy and its action-value function
@@ -405,7 +405,7 @@ def q_learning_on_tic_tac_toe_solo(
     gamma: float = 0.9999,
     alpha: float = 0.01,
     epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+    max_episodes_count: int = 25206,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
@@ -483,7 +483,7 @@ def expected_sarsa_on_tic_tac_toe_solo(
     gamma: float = 0.9999,
     alpha: float = 0.01,
     epsilon: float = 0.2,
-    max_episodes_count: int = 10000,
+    max_episodes_count: int = 25206,
 ) -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
@@ -838,8 +838,6 @@ def demo():
     # print(expected_sarsa_on_secret_env3())
     rule = expected_sarsa_on_tic_tac_toe_solo(tictactoe)
     possibilities = list(itertools.product([-1, 0, 1], repeat=9))
-    #print(test(tictactoe))
-
     dict_tictactoe = {}
     for possibilitie, key in zip(possibilities, rule.pi.keys()):
         dict_tictactoe[possibilitie] = key
