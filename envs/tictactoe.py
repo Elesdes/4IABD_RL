@@ -12,10 +12,7 @@ class TicTacToe(SingleAgentEnv):
 
     def reset_random(self):
         self.board = np.zeros(9, dtype=int)
-        if random.randint(0,1) == 0:
-            self.current_player = 1
-        else:
-            self.current_player = -1
+        self.current_player = 1
 
     def is_game_over(self):
         return self.check_winner() or np.all(self.board != 0)

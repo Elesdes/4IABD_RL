@@ -1,9 +1,12 @@
 import sys
-
-import numpy as np
+import math
+import itertools
+import time
 import pygame
-
-from games.tictactoe import TicTacToe
+from algorithms.temporal_difference_learning import (sarsa_on_tic_tac_toe_solo,
+                                                    q_learning_on_tic_tac_toe_solo,
+                                                    expected_sarsa_on_tic_tac_toe_solo)
+from envs.tictactoe import TicTacToe
 
 # Configuration de base de la fenêtre
 WINDOW_WIDTH = 600
@@ -42,31 +45,30 @@ def draw_lines():
 
 
 def draw_figures(env):
-    for row in range(BOARD_ROWS):
-        for col in range(BOARD_COLS):
-            if env.board[row][col] == 1:
-                pygame.draw.circle(
-                    screen,
-                    DARK_BLUE,
-                    (int(col * 200 + 100), int(row * 200 + 100)),
-                    CIRCLE_RADIUS,
-                    CIRCLE_WIDTH,
-                )
-            elif env.board[row][col] == -1:
-                pygame.draw.line(
-                    screen,
-                    DARK_BLUE,
-                    (col * 200 + SPACE, row * 200 + 200 - SPACE),
-                    (col * 200 + 200 - SPACE, row * 200 + SPACE),
-                    CROSS_WIDTH,
-                )
-                pygame.draw.line(
-                    screen,
-                    DARK_BLUE,
-                    (col * 200 + SPACE, row * 200 + SPACE),
-                    (col * 200 + 200 - SPACE, row * 200 + 200 - SPACE),
-                    CROSS_WIDTH,
-                )
+    for enum, cell in enumerate(env.board):
+        if cell == 1:
+            pygame.draw.circle(
+                screen,
+                DARK_BLUE,
+                (int(enum%3 * 200 + 100), int(int(math.floor(enum/3)) * 200 + 100)),
+                CIRCLE_RADIUS,
+                CIRCLE_WIDTH,
+            )
+        elif cell == -1:
+            pygame.draw.line(
+                screen,
+                DARK_BLUE,
+                (enum%3 * 200 + SPACE, int(math.floor(enum/3)) * 200 + 200 - SPACE),
+                (enum%3 * 200 + 200 - SPACE, int(math.floor(enum/3)) * 200 + SPACE),
+                CROSS_WIDTH,
+            )
+            pygame.draw.line(
+                screen,
+                DARK_BLUE,
+                (enum%3 * 200 + SPACE, int(math.floor(enum/3)) * 200 + SPACE),
+                (enum%3 * 200 + 200 - SPACE, int(math.floor(enum/3)) * 200 + 200 - SPACE),
+                CROSS_WIDTH,
+            )
 
 
 def restart(env):
@@ -141,8 +143,8 @@ def play_game():
                 mouseY = event.pos[1]  # Coordonnées en Y
                 clicked_row = int(mouseY // 200)
                 clicked_col = int(mouseX // 200)
-                if env.board[clicked_row][clicked_col] == 0:
-                    env.play((clicked_row, clicked_col))
+                if env.board[clicked_row*3 + clicked_col] == 0:
+                    env.act_with_action_id((clicked_row*3 + clicked_col))
                     # if env.is_game_over():
                     #     restart(env)
                     # draw_figures(env)
@@ -155,7 +157,7 @@ def play_game():
             # draw_agent(env.state_id())
             # draw_move_count(move_count)
         else:
-            draw_game_over(env.player)
+            draw_game_over(env.current_player)
             bouble_button("exit", "rejouer")
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -184,6 +186,58 @@ def play_game():
         pygame.display.update()
 
 
+def play(env, policy):
+    pygame.init()
+    screen.fill(LIGHT_BLUE)
+    clock = pygame.time.Clock()
+    # Boucle principale
+    running = True
+    possibilities = list(itertools.product([-1, 0, 1], repeat=9))
+    dict_tictactoe = {}
+    env.reset_random()
+    for possibilitie, key in zip(possibilities, policy.keys()):
+        dict_tictactoe[possibilitie] = key
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        window.fill(LIGHT_BLUE)
+        if not env.is_game_over():
+            choices = policy[dict_tictactoe[tuple(list(env.board))]]
+            max_key = max(choices, key=choices.get)
+            if env.board[max_key] == 0:
+                env.act_with_action_id(max_key)
+                time.sleep(0.5)
+
+            draw_figures(env)
+            draw_lines()
+
+        else:
+            draw_game_over(env.current_player)
+            bouble_button("exit", "rejouer")
+            for event in pygame.event.get():
+                print("okok1")
+                print(event.type)
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    print("okok2")
+                    mouse_pos = pygame.mouse.get_pos()
+                    if WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2 < mouse_pos[0] < WINDOW_WIDTH / 2 + BUTTON_WIDTH / 2:
+                        print("okok3")
+                        if WINDOW_HEIGHT / 2 - BUTTON_HEIGHT< mouse_pos[1]< WINDOW_HEIGHT / 2:
+                            print("okok4")
+                            running = False
+                        elif WINDOW_HEIGHT / 2 + BUTTON_HEIGHT < mouse_pos[1] < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT * 2:
+                            print("okok5")
+                            play(env, policy)
+        time.sleep(0.5)
+        pygame.display.flip()
+        pygame.display.update()
+        clock.tick(60)
+    main_menu()
+
+
 def main_menu():
     pygame.init()
     global window
@@ -195,7 +249,7 @@ def main_menu():
 
         draw_button(
             window,
-            "Play with policy evaluation",
+            "Play with Sarsa",
             WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
             WINDOW_HEIGHT / 2 - BUTTON_HEIGHT * 2 - BUTTON_SPACING * 1.5,
             BUTTON_WIDTH,
@@ -204,7 +258,7 @@ def main_menu():
         )
         draw_button(
             window,
-            "Play with policy iteration",
+            "Play with Q-learning",
             WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
             WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5,
             BUTTON_WIDTH,
@@ -213,7 +267,7 @@ def main_menu():
         )
         draw_button(
             window,
-            "Play with value iteration",
+            "Play with Expected Sarsa",
             WINDOW_WIDTH / 2 - BUTTON_WIDTH / 2,
             WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5,
             BUTTON_WIDTH,
@@ -247,25 +301,22 @@ def main_menu():
                         < mouse_pos[1]
                         < WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5
                     ):
-                        # policy = policy_evaluation_on_line_world(env).pi
-                        # play(env, policy)
-                        pass
+                        policy = sarsa_on_tic_tac_toe_solo(env).pi
+                        play(env, policy)
                     elif (
                         WINDOW_HEIGHT / 2 - BUTTON_HEIGHT - BUTTON_SPACING * 0.5
                         < mouse_pos[1]
                         < WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5
                     ):
-                        # policy = policy_iteration_on_line_world(env).pi
-                        # play(env, policy)
-                        pass
+                        policy = q_learning_on_tic_tac_toe_solo(env).pi
+                        play(env, policy)
                     elif (
                         WINDOW_HEIGHT / 2 + BUTTON_SPACING * 0.5
                         < mouse_pos[1]
                         < WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5
                     ):
-                        # policy = value_iteration_on_line_world(env).pi
-                        # play(env, policy)
-                        pass
+                        policy = expected_sarsa_on_tic_tac_toe_solo(env).pi
+                        play(env, policy)
                     elif (
                         WINDOW_HEIGHT / 2 + BUTTON_HEIGHT + BUTTON_SPACING * 1.5
                         < mouse_pos[1]

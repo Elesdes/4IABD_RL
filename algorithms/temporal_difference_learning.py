@@ -815,87 +815,6 @@ def expected_sarsa_on_secret_env3(
             pi[s][aa[max_a]] = 1.0
     return PolicyAndActionValueFunction(pi=dict(pi), q=dict(Q))
 
-def test(
-        env: TicTacToe,
-        gamma: float = 0.9999,
-        alpha: float = 0.1,
-        epsilon: float = 0.2,
-        max_episodes_count: int = 100000,
-) -> PolicyAndActionValueFunction:
-    assert epsilon > 0
-    assert alpha > 0
-    #pi = np.zeros((env.state_space(), env.action_space()))
-    #Q = np.random.uniform(-1.0, 1.0, (env.state_space(), env.action_space()))
-    pi = {}
-    Q = {}
-    possibilities = list(itertools.product([-1, 0, 1], repeat=9))
-    dict_act = {i: random.uniform(-1, 1) for i in range(9)}
-    dict_act_zeros = {i: 0 for i in range(9)}
-    for i in possibilities:
-        Q[i] = dict_act.copy()
-        pi[i] = dict_act_zeros.copy()
-    #Q = np.array([list(Q[key].values()) for key in Q.keys()])
-    #pi = np.array([list(pi[key].values()) for key in pi.keys()])
-    for _ in range(max_episodes_count):
-        env.reset_random()
-        while not env.is_game_over():
-            s = [int(x) for x in env.state_id().replace('[', '').replace(']', '').strip().replace('  ', ' ').split(' ')]
-            aa = env.available_actions_ids()
-            if np.random.random() < epsilon:
-                a = np.random.choice(aa)
-            else:
-                take_Q = Q[tuple(s)]
-                best_a_idx = -1
-                temp_value = -1
-                for x in take_Q.keys():
-                    if Q[tuple(s)][x] > temp_value and x in aa:
-                        temp_value = Q[tuple(s)][x]
-                        best_a_idx = x
-                #best_a_idx = np.argmax(Q[s][aa])
-                a = best_a_idx
-
-            old_score = env.score()
-            env.act_with_action_id(a)
-            new_score = env.score()
-            r = new_score - old_score
-            s_p = [int(x) for x in env.state_id().replace('[', '').replace(']', '').strip().replace('  ', ' ').split(' ')]
-            if aa_p := env.available_actions_ids():
-                if np.random.random() < epsilon:
-                    a_p = np.random.choice(aa_p)
-                else:
-                    take_Q = Q[tuple(s_p)]
-                    best_a_p_idx = -1
-                    temp_value = -1
-                    for x in take_Q.keys():
-                        if Q[tuple(s_p)][x] > temp_value and x in aa_p:
-                            temp_value = Q[tuple(s_p)][x]
-                            best_a_p_idx = x
-                    #best_a_p_idx = np.argmax(Q[s_p][aa_p])
-                    a_p = best_a_p_idx
-
-            if env.is_game_over():
-                for k in Q[tuple(s_p)]:
-                    Q[tuple(s_p)][k] = 0.0
-                #Q[tuple(s_p)][:] = 0.0
-                Q[tuple(s)][a] += alpha * (r - Q[tuple(s)][a])
-            else:
-                Q[tuple(s)][a] += alpha * (r + gamma * (Q[tuple(s_p)][a_p]) - Q[tuple(s)][a])
-
-            for k in pi[tuple(s)]:
-                pi[tuple(s)][k] = 0.0
-            #pi[tuple(s)][:] = 0.0
-            take_Q = Q[tuple(s)]
-            best_idx = -1
-            temp_value = -1
-            for x in take_Q.keys():
-                if Q[tuple(s)][x] > temp_value and x in aa:
-                    temp_value = Q[tuple(s)][x]
-                    best_idx = x
-            pi[tuple(s)][best_idx] = 1.0
-
-    return PolicyAndActionValueFunction(pi={i: value for i, value in enumerate(pi.values())}, q={i: value for i, value in enumerate(Q.values())})
-
-
 def demo():
     line_world = LineWorldEnv(7)
     grid_world = GridWorldEnv(5, 5)
@@ -912,7 +831,7 @@ def demo():
 
     #print(sarsa_on_tic_tac_toe_solo(tictactoe))
     #print(q_learning_on_tic_tac_toe_solo(tictactoe))
-    print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
+    #print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
 
     # print(sarsa_on_secret_env3())
     # print(q_learning_on_secret_env3())

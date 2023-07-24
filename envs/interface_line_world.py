@@ -6,7 +6,7 @@ from algorithms.dynamic_programming import (
     policy_iteration_on_line_world,
     value_iteration_on_line_world,
 )
-from games.line_world import LineWorldEnv
+from envs.line_world import LineWorldEnv
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 800

@@ -6,7 +6,7 @@ import pygame
 from algorithms.dynamic_programming import (policy_evaluation_on_grid_world,
                                             policy_iteration_on_grid_world,
                                             value_iteration_on_grid_world)
-from games.grid_world import GridWorldEnv
+from envs.grid_world import GridWorldEnv
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 800
