@@ -819,11 +819,11 @@ def demo():
     line_world = LineWorldEnv(7)
     grid_world = GridWorldEnv(5, 5)
     tictactoe = TicTacToe()
-    """
+
     print(sarsa_on_line_world(line_world))
     print(q_learning_on_line_world(line_world))
     print(expected_sarsa_on_line_world(line_world))
-
+    """
     print(sarsa_on_grid_world(grid_world))
     print(q_learning_on_grid_world(grid_world))
     print(expected_sarsa_on_grid_world(grid_world))
