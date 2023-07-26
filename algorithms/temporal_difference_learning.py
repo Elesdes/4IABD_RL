@@ -819,23 +819,23 @@ def demo():
     line_world = LineWorldEnv(7)
     grid_world = GridWorldEnv(5, 5)
     tictactoe = TicTacToe()
-
     print(sarsa_on_line_world(line_world))
     print(q_learning_on_line_world(line_world))
     print(expected_sarsa_on_line_world(line_world))
-    """
+    
     print(sarsa_on_grid_world(grid_world))
     print(q_learning_on_grid_world(grid_world))
     print(expected_sarsa_on_grid_world(grid_world))
+
+    print(sarsa_on_tic_tac_toe_solo(tictactoe))
+    print(q_learning_on_tic_tac_toe_solo(tictactoe))
+    print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
+
+    print(sarsa_on_secret_env3())
+    print(q_learning_on_secret_env3())
+    print(expected_sarsa_on_secret_env3())
     """
-
-    #print(sarsa_on_tic_tac_toe_solo(tictactoe))
-    #print(q_learning_on_tic_tac_toe_solo(tictactoe))
-    #print(expected_sarsa_on_tic_tac_toe_solo(tictactoe))
-
-    # print(sarsa_on_secret_env3())
-    # print(q_learning_on_secret_env3())
-    # print(expected_sarsa_on_secret_env3())
+    print("Visualisation")
     rule = expected_sarsa_on_tic_tac_toe_solo(tictactoe)
     possibilities = list(itertools.product([-1, 0, 1], repeat=9))
     dict_tictactoe = {}
@@ -848,6 +848,7 @@ def demo():
         print(rule.pi[dict_tictactoe[tuple(list(tictactoe.board))]])
         choice = int(input("Choix: "))
         tictactoe.act_with_action_id(choice)
+    """
     print("End")
 
 
